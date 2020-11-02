@@ -1,8 +1,8 @@
 import logging
 import mysql.connector
 
-listElementTypes = ['root', 'folder', 'function', 'block', 'usecase']
-listLinkTypes = ['flow', 'aggregation', 'link']
+listElementTypes = ['folder', 'function', 'block', 'component', 'data']
+listLinkTypes = ['dataflow', 'aggregation', 'link']
 
 strCommon = """
 id INT PRIMARY KEY AUTO_INCREMENT UNIQUE, 
@@ -64,9 +64,7 @@ class modelsql():
 
     def connect(self, host, user, password):
         """Connects to mysql server"""
-        print (host + " " + user + "-" + password)
         self.db =  mysql.connector.connect(host=host, user=user, password=password)
-        print (host + " " + user + "-" + password)
         if (self.db):
             self.cursor = self.db.cursor()
             logging.info("Connected to mysql server")
@@ -137,10 +135,10 @@ class modelsql():
         self.cursor.execute("SELECT id, parentId, name, type FROM element WHERE parentId = '{}'".format(str(intId)))
         return self.cursor.fetchall()
         
-    def insertLink(self, path_origin, path_destination, type):
+    def insertLink(self, path_origin, path_destination, type, name):
         sourceId = self.getIdperPath(path_origin)
         destinationId = self.getIdperPath(path_destination)
-        self.cursor.execute("INSERT INTO link(source, destination, type) VALUES(" + "{},{},'{}'".format(sourceId, destinationId, type) + ")")
+        self.cursor.execute("INSERT INTO link(source, destination, type, name) VALUES(" + "{},{},'{}','{}'".format(sourceId, destinationId, str(type), str(name)) + ")")
         self.db.commit()
         logging.info(type + "link inserted: " + path_origin + " -> " + path_destination)
 

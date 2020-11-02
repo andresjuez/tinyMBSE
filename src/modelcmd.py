@@ -195,15 +195,16 @@ class modelcmd(cmd2.Cmd):
     parser.add_argument('origin', help="origin", completer_method=cmd2.Cmd.path_complete)
     parser.add_argument('destination', help="destination", completer_method=cmd2.Cmd.path_complete)
     parser.add_argument('-t', '--type', help="type of element to be created", choices=modelsql.listLinkTypes)
+    parser.add_argument('-n', '--name', help="name of the link")
     @cmd2.with_argparser(parser)
     @cmd2.with_category(strELEMENT_COMMANDS)
     def do_ln(self, args):
         """Creates a link between two elements""" 
         if self.cmd_can_be_executed():
-            type = 'flow'
+            strtype = 'dataflow'
             if args.type:
-                type = args.type
-            self.modelsql.insertLink(self.modelpath.getAbsPath(args.origin), self.modelpath.getAbsPath(args.destination), type) 
+                strtype = args.type
+            self.modelsql.insertLink(self.modelpath.getAbsPath(args.origin), self.modelpath.getAbsPath(args.destination), strtype, args.name) 
             return;
 
 # del - [NAME]
