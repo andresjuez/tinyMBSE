@@ -1,4 +1,4 @@
-#!./venv/bin/python
+#!/usr/bin/env python
 import logging
 #import unittest //maybe someday
 import modelcmd
