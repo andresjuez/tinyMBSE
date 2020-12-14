@@ -2,7 +2,7 @@ import logging
 import mysql.connector
 
 listElementTypes = ['folder', 'function', 'block', 'component', 'data']
-listLinkTypes = ['dataflow', 'aggregation', 'link']
+listLinkTypes = ['dataflow', 'aggregation', 'link'] 
 
 strCommon = """
 id INT PRIMARY KEY AUTO_INCREMENT UNIQUE, 
