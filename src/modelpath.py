@@ -7,21 +7,21 @@ class modelpath():
 
     def __init__(self):
 
-        # CLIMB_PATH = environment variable for deploying path_complete (./ if not provided)
-        self.CLIMB_PATH = "./.climb"
+        # TINYMBSE_PATH = environment variable for deploying path_complete (./ if not provided)
+        self.TINYMBSE_PATH = "./.tinyMBSE"
 
-        if environ.get("CLIMB_PATH") is not None:
-            self.CLIMB_PATH = environ.get("CLIMB_PATH")
+        if environ.get("TINYMBSE_PATH") is not None:
+            self.TINYMBSE_PATH = environ.get("TINYMBSE_PATH")
 
         # clean previous
-        self.removeFolder(self.CLIMB_PATH)
+        self.removeFolder(self.TINYMBSE_PATH)
 
-        if not os.path.exists(self.CLIMB_PATH):
-            os.makedirs(self.CLIMB_PATH)
+        if not os.path.exists(self.TINYMBSE_PATH):
+            os.makedirs(self.TINYMBSE_PATH)
 
-        os.chdir(self.CLIMB_PATH)
+        os.chdir(self.TINYMBSE_PATH)
 
-        self.CLIMB_PATH = os.getcwd()
+        self.TINYMBSE_PATH = os.getcwd()
 
     def initFolders(self, name, id, modelsql):
         self.newFolder(name)
@@ -30,14 +30,14 @@ class modelpath():
         for sonId, parentId, sonName, type in modelsql.getSonsPerId(id):
             self.cd(strCD)
             self.initFolders(sonName, sonId, modelsql)
-        self.cd(self.CLIMB_PATH)
+        self.cd(self.TINYMBSE_PATH)
         return
 
     def getCWD(self):
-        return os.getcwd().replace(self.CLIMB_PATH,'')
+        return os.getcwd().replace(self.TINYMBSE_PATH,'')
 
     def getAbsPath(self, strRelativePath):
-        return os.path.abspath(strRelativePath).replace(self.CLIMB_PATH,'')
+        return os.path.abspath(strRelativePath).replace(self.TINYMBSE_PATH,'')
 
     def cd(self, foldername): 
         return os.chdir(foldername)
