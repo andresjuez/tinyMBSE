@@ -15,10 +15,10 @@ class modelcmd(cmd2.Cmd):
     def __init__(self):
 
         # call parent
-        super().__init__(multiline_commands=['echo'], persistent_history_file='.climb_history.dat', use_ipython=True)
+        super().__init__(multiline_commands=['echo'], persistent_history_file='.tinyMBSE_history.dat', use_ipython=True)
 
         # intro
-        self.intro = style('Welcome to Command Line Interface Modelling Blocks (climb)!', bold=True)
+        self.intro = style('Welcome to (tiny)MBSE! model using the command line interface', bold=True)
 
         # model sql management
         self.modelsql = modelsql.modelsql()
@@ -100,7 +100,7 @@ class modelcmd(cmd2.Cmd):
             bSelected = self.modelsql.useDB(args.model[0])
             if (bSelected):
                 # manage paths
-                self.modelpath.cd(self.modelpath.CLIMB_PATH)
+                self.modelpath.cd(self.modelpath.TINYMBSE_PATH)
                 self.modelpath.removeFolder(args.model[0])
                 self.modelpath.initFolders(args.model[0], 1, self.modelsql)
                 self.modelpath.cd(args.model[0])
@@ -118,7 +118,7 @@ class modelcmd(cmd2.Cmd):
             bCreated = self.modelsql.createDB(args.model[0])
             if (bCreated):
                 # manage paths
-                self.modelpath.cd(self.modelpath.CLIMB_PATH)
+                self.modelpath.cd(self.modelpath.TINYMBSE_PATH)
                 self.modelpath.newFolder(args.model[0])
                 self.modelpath.cd(args.model[0])
                 # manage DB
@@ -134,9 +134,9 @@ class modelcmd(cmd2.Cmd):
     def do_mdel(self, args):
         if self.mcmd_can_be_executed():
             # manage Paths
-            self.modelpath.removeFolder(self.modelpath.CLIMB_PATH + "/" + args.model[0])
+            self.modelpath.removeFolder(self.modelpath.TINYMBSE_PATH + "/" + args.model[0])
             if (args.model[0] == self.modelsql.strSelectedDB):
-                self.modelpath.cd(self.modelpath.CLIMB_PATH)
+                self.modelpath.cd(self.modelpath.TINYMBSE_PATH)
             # manage DB
             self.modelsql.dropDB(args.model[0])
         
