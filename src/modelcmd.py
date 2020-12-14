@@ -168,11 +168,12 @@ class modelcmd(cmd2.Cmd):
         """list elements""" 
         if self.cmd_can_be_executed():
             listSons = self.modelsql.getSonsPerId(self.modelsql.intCWI)
-            if (args.links): 
+            if (args.links):
+                listLinks = []
                 for id, parentId, name, type in listSons:
-                    listLinks = self.modelsql.getLinksPerId(id)
-                    for source, destination in listLinks:
-                        print (str(source) + " -> " + str(destination))
+                    listLinks += self.modelsql.getLinksPerId(id)
+                for source, destination in set(listLinks):
+                    print (str(source) + " -> " + str(destination))
             else:
                 self.ppaged(" ".join([i[2] for i in listSons]), chop=True)
             return;
