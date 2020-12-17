@@ -1,39 +1,6 @@
 import logging
 import mysql.connector
-
-listElementTypes = ['folder', 'function', 'block', 'component', 'data']
-listLinkTypes = ['dataflow', 'aggregation', 'link'] 
-
-strCommon = """
-id INT PRIMARY KEY AUTO_INCREMENT UNIQUE, 
-name VARCHAR(255) NOT NULL, 
-description VARCHAR(1000),
-creationDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-version FLOAT)
-"""
-
-strElement = "" + \
-"element (" + \
-"type ENUM(" +  ",".join(["'{}'".format(x) for x in listElementTypes]) + ") NOT NULL," + \
-"parentId INT REFERENCES element(id)," + \
-"path VARCHAR(1024)," + \
-strCommon
-
-strLink = "" + \
-"link (" + \
-"type ENUM(" +  ",".join(["'{}'".format(x) for x in listLinkTypes]) + ") NOT NULL," + \
-"parentId INT REFERENCES link(id)," + \
-"source INT," + \
-"FOREIGN KEY (source) REFERENCES element(id), " + \
-"destination INT, " + \
-"FOREIGN KEY (destination) REFERENCES element(id)," + \
-strCommon
-
-strConveyed = """
-conveyed (
-link INT, FOREIGN KEY link(id),
-element INT, FOREIGN KEY element(id))
-""" 
+import modeldef as md
 
 class modelsql():
 
@@ -103,8 +70,10 @@ class modelsql():
         logging.info(dbname + " created")
         bSelected = self.useDB(dbname)
         if bSelected:
-            self.cursor.execute("CREATE TABLE " + strElement)
-            self.cursor.execute("CREATE TABLE " + strLink)
+            strElementTable = md.strElementTableName + "(" + ",".join("{} {}".format(x,y) for x,y in zip(md.listElementField, md.listElementFieldSQL)) + ")"
+            self.cursor.execute("CREATE TABLE " + strElementTable)          
+            strLinkTable = md.strLinkTableName + "(" + ",".join("{} {}".format(x,y) for x,y in zip(md.listLinkField, md.listLinkFieldSQL)) + ")"
+            self.cursor.execute("CREATE TABLE " + strLinkTable)
             #self.cursor.execute("CREATE TABLE " + modeldef.strConveyed)
         return bSelected
 

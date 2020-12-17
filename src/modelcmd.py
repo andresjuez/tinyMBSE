@@ -2,8 +2,9 @@ import argparse
 import cmd2
 from cmd2 import bg, fg, style, ansi
 from typing import List
-import modelsql
-import modelpath
+import modelsql as msql
+import modelpath as mp
+import modeldef as md
 import logging
 
 class modelcmd(cmd2.Cmd):
@@ -21,10 +22,10 @@ class modelcmd(cmd2.Cmd):
         self.intro = style('Welcome to (tiny)MBSE! model using the command line interface', bold=True)
 
         # model sql management
-        self.modelsql = modelsql.modelsql()
+        self.msql = msql.modelsql()
 
         # model path management
-        self.modelpath = modelpath.modelpath()
+        self.mp = mp.modelpath()
 
         # Allow access to your application in py and ipy via self
         self.self_in_py = True
@@ -34,11 +35,11 @@ class modelcmd(cmd2.Cmd):
        
     def _set_prompt(self):
         """Set prompt so it displays the current working directory."""
-        if (self.modelsql.bConnected == False):
+        if (self.msql.bConnected == False):
             self.prompt = ansi.style(f'Disconnected/> ', fg='bright_red')
             return
-        self.prompt = ansi.style("[" + self.modelsql.strUser + "@" + self.modelsql.strHost + " " + \
-                                 str(self.modelsql.intCWI) + "] " + self.modelpath.getCWD() + "/> ")
+        self.prompt = ansi.style("[" + self.msql.strUser + "@" + self.msql.strHost + " " + \
+                                 str(self.msql.intCWI) + "] " + self.mp.getCWD() + "/> ")
 
     def postcmd(self, stop: bool, line: str) -> bool:
         """Hook method executed just after a command dispatch is finished.
@@ -54,17 +55,17 @@ class modelcmd(cmd2.Cmd):
     # ANCILLIARY get model list 
     def get_db_list(self) -> List[str]:
         """list of available db options"""
-        return self.modelsql.listDB()
+        return self.msql.listDB()
 
     def mcmd_can_be_executed(self):
-        if self.modelsql.bConnected:
+        if self.msql.bConnected:
             return True
         logging.info("Please connect first")
         return False
 
     def cmd_can_be_executed(self):
-        if self.modelsql.bConnected:
-            if self.modelsql.bSelected:
+        if self.msql.bConnected:
+            if self.msql.bSelected:
                 return True
             else:
                 logging.info("Please Select Model first")
@@ -81,7 +82,7 @@ class modelcmd(cmd2.Cmd):
     @cmd2.with_category(strMODEL_COMMANDS)
     def do_connect(self, args):
         """Connects to mysql server""" 
-        self.modelsql.connect(args.host, args.user, args.password)
+        self.msql.connect(args.host, args.user, args.password)
 
     # CMD: mls #
     @cmd2.with_category(strMODEL_COMMANDS)
@@ -97,15 +98,15 @@ class modelcmd(cmd2.Cmd):
     @cmd2.with_category(strMODEL_COMMANDS)
     def do_msel(self, args):
         if self.mcmd_can_be_executed():
-            bSelected = self.modelsql.useDB(args.model[0])
+            bSelected = self.msql.useDB(args.model[0])
             if (bSelected):
                 # manage paths
-                self.modelpath.cd(self.modelpath.TINYMBSE_PATH)
-                self.modelpath.removeFolder(args.model[0])
-                self.modelpath.initFolders(args.model[0], 1, self.modelsql)
-                self.modelpath.cd(args.model[0])
+                self.mp.cd(self.mp.TINYMBSE_PATH)
+                self.mp.removeFolder(args.model[0])
+                self.mp.initFolders(args.model[0], 1, self.msql)
+                self.mp.cd(args.model[0])
                 # manage DB
-                self.modelsql.intCWI = 1
+                self.msql.intCWI = 1
         return
 
     # CMD: mnew #
@@ -115,16 +116,16 @@ class modelcmd(cmd2.Cmd):
     @cmd2.with_category(strMODEL_COMMANDS)
     def do_mnew(self, args):
         if self.mcmd_can_be_executed():
-            bCreated = self.modelsql.createDB(args.model[0])
+            bCreated = self.msql.createDB(args.model[0])
             if (bCreated):
                 # manage paths
-                self.modelpath.cd(self.modelpath.TINYMBSE_PATH)
-                self.modelpath.newFolder(args.model[0])
-                self.modelpath.cd(args.model[0])
+                self.mp.cd(self.mp.TINYMBSE_PATH)
+                self.mp.newFolder(args.model[0])
+                self.mp.cd(args.model[0])
                 # manage DB
-                self.modelsql.intCWI = 0
-                self.modelsql.insertElement(args.model[0], 'folder', self.modelpath.getCWD())
-                self.modelsql.selectCWIperPath(self.modelpath.getCWD())
+                self.msql.intCWI = 0
+                self.msql.insertElement(args.model[0], 'folder', self.mp.getCWD())
+                self.msql.selectCWIperPath(self.mp.getCWD())
 
     # CMD: mdel #
     parser = argparse.ArgumentParser(description='delete model', add_help=False)
@@ -134,19 +135,19 @@ class modelcmd(cmd2.Cmd):
     def do_mdel(self, args):
         if self.mcmd_can_be_executed():
             # manage Paths
-            self.modelpath.removeFolder(self.modelpath.TINYMBSE_PATH + "/" + args.model[0])
-            if (args.model[0] == self.modelsql.strSelectedDB):
-                self.modelpath.cd(self.modelpath.TINYMBSE_PATH)
+            self.mp.removeFolder(self.mp.TINYMBSE_PATH + "/" + args.model[0])
+            if (args.model[0] == self.msql.strSelectedDB):
+                self.mp.cd(self.mp.TINYMBSE_PATH)
             # manage DB
-            self.modelsql.dropDB(args.model[0])
+            self.msql.dropDB(args.model[0])
         
     # CMD: insert #
     def insert_options(self) -> List[str]:
         """insert options"""
-        return [item[2] for item in self.modelsql.getSonsPerId(self.modelsql.intCWI)] 
+        return [item[2] for item in self.msql.getSonsPerId(self.msql.intCWI)] 
 
     parser = argparse.ArgumentParser(description='insert element')
-    parser.add_argument('type', help="type of element to be created", choices=modelsql.listElementTypes)
+    parser.add_argument('type', help="type of element to be created", choices=md.listElementTypes)
     parser.add_argument('name', help="element name", choices_method=insert_options)
     @cmd2.with_argparser(parser)
     @cmd2.with_category(strELEMENT_COMMANDS)
@@ -154,9 +155,9 @@ class modelcmd(cmd2.Cmd):
         """Creates insert element""" 
         if self.cmd_can_be_executed():
             # manage Paths
-            self.modelpath.newFolder(args.name)
+            self.mp.newFolder(args.name)
             # manage DB
-            self.modelsql.insertElement(args.name, args.type, self.modelpath.getCWD()+"/"+args.name)
+            self.msql.insertElement(args.name, args.type, self.mp.getCWD()+"/"+args.name)
             return;
 
     # CMD: ls #
@@ -167,11 +168,11 @@ class modelcmd(cmd2.Cmd):
     def do_ls(self, args):
         """list elements""" 
         if self.cmd_can_be_executed():
-            listSons = self.modelsql.getSonsPerId(self.modelsql.intCWI)
+            listSons = self.msql.getSonsPerId(self.msql.intCWI)
             if (args.links):
                 listLinks = []
                 for id, parentId, name, type in listSons:
-                    listLinks += self.modelsql.getLinksPerId(id)
+                    listLinks += self.msql.getLinksPerId(id)
                 for source, destination in set(listLinks):
                     print (str(source) + " -> " + str(destination))
             else:
@@ -184,8 +185,8 @@ class modelcmd(cmd2.Cmd):
     def do_cd(self, args: List[str]):
         """Change working directory""" 
         if self.cmd_can_be_executed():
-            strBasename = self.modelpath.cd(args[0])
-            self.modelsql.selectCWIperPath(self.modelpath.getCWD())
+            strBasename = self.mp.cd(args[0])
+            self.msql.selectCWIperPath(self.mp.getCWD())
             self.ppaged(args[0], chop=True)
             return;
 
@@ -195,7 +196,7 @@ class modelcmd(cmd2.Cmd):
     parser = argparse.ArgumentParser(description='link to elements')
     parser.add_argument('origin', help="origin", completer_method=cmd2.Cmd.path_complete)
     parser.add_argument('destination', help="destination", completer_method=cmd2.Cmd.path_complete)
-    parser.add_argument('-t', '--type', help="type of element to be created", choices=modelsql.listLinkTypes)
+    parser.add_argument('-t', '--type', help="type of element to be created", choices=md.listLinkTypes)
     parser.add_argument('-n', '--name', help="name of the link")
     @cmd2.with_argparser(parser)
     @cmd2.with_category(strELEMENT_COMMANDS)
@@ -205,27 +206,9 @@ class modelcmd(cmd2.Cmd):
             strtype = 'dataflow'
             if args.type:
                 strtype = args.type
-            self.modelsql.insertLink(self.modelpath.getAbsPath(args.origin), self.modelpath.getAbsPath(args.destination), strtype, args.name) 
+            self.msql.insertLink(self.mp.getAbsPath(args.origin), self.mp.getAbsPath(args.destination), strtype, args.name) 
             return;
-
-# del - [NAME]
-#  --help, deletes an element and all its sons, all the links where this element appears
-#  --f, force the deletion without asking
-#   OS for path_complete: remove a folder in the ancilliary directory tree, son of CWD
-
-# msel - [NAME]
-#  --help, Select dabatabase/model
-#  reads the DB and creates the folder structure
- 
-# link [element_source] [element_destination]
-#  --help, links two elements
-#  --type, flow, realization, aggregation, etc
-#  --parent indicate previous link, useful for sequence diagrams
- 
-# convey [linkname] [element]
-#  --help, joins an element to a link 
-
-    
+   
 
 # import datetime as dt
 # import uuid
