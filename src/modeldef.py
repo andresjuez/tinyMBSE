@@ -14,7 +14,7 @@ listElementFieldSQL = ['INT PRIMARY KEY AUTO_INCREMENT UNIQUE',
                        'INT REFERENCES ' + strElementTableName + '(id)',
                        'VARCHAR(1024)']
 # CMD 
-listElementTypesColours = ['blue', 'green', 'light-blue', 'pink', 'light-pink']
+listElementTypesColours = ['blue', 'bright_green', 'bright_cyan', 'bright_magenta', 'magenta']
 
 
 

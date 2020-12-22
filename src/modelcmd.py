@@ -176,7 +176,8 @@ class modelcmd(cmd2.Cmd):
                 for source, destination in set(listLinks):
                     print (str(source) + " -> " + str(destination))
             else:
-                self.ppaged(" ".join([i[2] for i in listSons]), chop=True)
+                dictTypeColours = dict(zip(md.listElementTypes,md.listElementTypesColours))
+                self.ppaged("\t".join([ansi.style(i[2], fg=dictTypeColours[i[3]]) for i in listSons]), chop=True)
             return;
 
     # CMD: cd #

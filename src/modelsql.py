@@ -74,7 +74,6 @@ class modelsql():
             self.cursor.execute("CREATE TABLE " + strElementTable)          
             strLinkTable = md.strLinkTableName + "(" + ",".join("{} {}".format(x,y) for x,y in zip(md.listLinkField, md.listLinkFieldSQL)) + ")"
             self.cursor.execute("CREATE TABLE " + strLinkTable)
-            #self.cursor.execute("CREATE TABLE " + modeldef.strConveyed)
         return bSelected
 
     def dropDB(self, dbname):
@@ -85,7 +84,7 @@ class modelsql():
         logging.info(dbname + " deleted")
 
     def insertElement(self, name, elementType, path):
-        self.cursor.execute("INSERT INTO element(name, type, path, parentId) VALUES(" + "'{}','{}','{}',{}".format(name, elementType, path, str(self.intCWI)) + ")")
+        self.cursor.execute("INSERT INTO element(name, type, path, parentId) VALUES(" + "'{}','{}','{}','{}'".format(name, elementType, path, str(self.intCWI)) + ")")
         self.db.commit()
         logging.info(name + " inserted")
 
