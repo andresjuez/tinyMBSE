@@ -169,14 +169,16 @@ class modelcmd(cmd2.Cmd):
         """list elements""" 
         if self.cmd_can_be_executed():
             listSons = self.msql.getSonsPerId(self.msql.intCWI)
+            dictTypeColours = dict(zip(md.listElementTypes,md.listElementTypesColours))
             if (args.links):
                 listLinks = []
                 for id, parentId, name, type in listSons:
                     listLinks += self.msql.getLinksPerId(id)
                 for source, destination in set(listLinks):
-                    print (str(source) + " -> " + str(destination))
+                    sourceData = self.msql.getElementNamePerId(source)
+                    destinationData = self.msql.getElementNamePerId(destination)
+                    print (ansi.style(sourceData[0][0], fg=dictTypeColours[sourceData[0][1]]) + "\t->\t" + ansi.style(destinationData[0][0], fg=dictTypeColours[destinationData[0][1]]))
             else:
-                dictTypeColours = dict(zip(md.listElementTypes,md.listElementTypesColours))
                 self.ppaged("\t".join([ansi.style(i[2], fg=dictTypeColours[i[3]]) for i in listSons]), chop=True)
             return;
 
