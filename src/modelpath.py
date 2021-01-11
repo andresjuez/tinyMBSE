@@ -49,6 +49,9 @@ class modelpath():
         if os.path.exists(foldername):
             return shutil.rmtree(foldername)
 
+    def mv(self, source, destination):
+        if os.path.exists(source):
+            return shutil.move(source, destination)
 
 
  

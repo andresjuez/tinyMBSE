@@ -84,16 +84,16 @@ class modelsql():
         logging.info(dbname + " deleted")
 
     def insertElement(self, name, elementType, path):
-        self.cursor.execute("INSERT INTO element(name, type, path, parentId) VALUES(" + "'{}','{}','{}','{}'".format(name, elementType, path, str(self.intCWI)) + ")")
+        self.cursor.execute("INSERT INTO " + md.strElementTableName + "(name, type, path, parentId) VALUES(" + "'{}','{}','{}','{}'".format(name, elementType, path, str(self.intCWI)) + ")")
         self.db.commit()
         logging.info(name + " inserted")
 
     def getIdperPath(self, path):
-        self.cursor.execute("SELECT id FROM element WHERE path = '{}'".format(path))
+        self.cursor.execute("SELECT id FROM " + md.strElementTableName + " WHERE path = '{}'".format(path))
         return self._fetchall(0)[0]
 
     def getElementNamePerId(self, id):
-        self.cursor.execute("SELECT name, type FROM element WHERE id = '{}'".format(id))
+        self.cursor.execute("SELECT name, type FROM " + md.strElementTableName + " WHERE id = '{}'".format(id))
         return self.cursor.fetchall()
 
     def selectCWIperPath(self, path):
@@ -106,10 +106,10 @@ class modelsql():
     def insertLink(self, path_origin, path_destination, type, name):
         sourceId = self.getIdperPath(path_origin)
         destinationId = self.getIdperPath(path_destination)
-        self.cursor.execute("INSERT INTO link(source, destination, type, name) VALUES(" + "{},{},'{}','{}'".format(sourceId, destinationId, str(type), str(name)) + ")")
+        self.cursor.execute("INSERT INTO " + md.strLinkTableName + "(source, destination, type, name) VALUES(" + "{},{},'{}','{}'".format(sourceId, destinationId, str(type), str(name)) + ")")
         self.db.commit()
         logging.info(type + "link inserted: " + path_origin + " -> " + path_destination)
 
     def getLinksPerId(self, id):
-        self.cursor.execute("SELECT source, destination FROM link  WHERE source = '{}' OR destination = '{}'".format(str(id), str(id)))
+        self.cursor.execute("SELECT source, destination FROM " + md.strLinkTableName + "  WHERE source = '{}' OR destination = '{}'".format(str(id), str(id)))
         return self.cursor.fetchall()
