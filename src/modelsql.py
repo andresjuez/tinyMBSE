@@ -100,8 +100,21 @@ class modelsql():
         self.intCWI = self.getIdperPath(path)
 
     def getSonsPerId(self, intId):
-        self.cursor.execute("SELECT id, parentId, name, type FROM element WHERE parentId = '{}'".format(str(intId)))
+        self.cursor.execute("SELECT id, parentId, name, type, path FROM element WHERE parentId = '{}'".format(str(intId)))
         return self.cursor.fetchall()
+
+    def updateNamePerId(self, intId, newName):
+        self.cursor.execute("UPDATE " + md.strElementTableName + " SET name = '{}' WHERE id = '{}'".format(str(newName), str(intId)))
+        self.db.commit()
+    
+    def updatePathPerId(self, intId, newPath):
+        print ("UPDATE " + md.strElementTableName + " SET path = '{}' WHERE id = '{}'".format(str(newPath), str(intId)))
+        self.cursor.execute("UPDATE " + md.strElementTableName + " SET path = '{}' WHERE id = '{}'".format(str(newPath), str(intId)))
+        self.db.commit()
+
+    def updateParentIdPerId(self, intId, newParentId):
+        self.cursor.execute("UPDATE " + md.strElementTableName + " SET parentId = '{}' WHERE id = '{}'".format(str(newParentId), str(intId)))
+        self.db.commit()
         
     def insertLink(self, path_origin, path_destination, type, name):
         sourceId = self.getIdperPath(path_origin)

@@ -27,7 +27,7 @@ class modelpath():
         self.newFolder(name)
         self.cd(name)
         strCD = os.getcwd()
-        for sonId, parentId, sonName, type in modelsql.getSonsPerId(id):
+        for sonId, parentId, sonName, type, path in modelsql.getSonsPerId(id):
             self.cd(strCD)
             self.initFolders(sonName, sonId, modelsql)
         self.cd(self.TINYMBSE_PATH)
@@ -36,8 +36,11 @@ class modelpath():
     def getCWD(self):
         return os.getcwd().replace(self.TINYMBSE_PATH,'')
 
-    def getAbsPath(self, strRelativePath):
+    def getToolAbsPath(self, strRelativePath):
         return os.path.abspath(strRelativePath).replace(self.TINYMBSE_PATH,'')
+    
+    def getToolAbsDirectory(self, strRelativePath):
+        return os.path.dirname(os.path.abspath(strRelativePath).replace(self.TINYMBSE_PATH,''))
 
     def cd(self, foldername): 
         return os.chdir(foldername)

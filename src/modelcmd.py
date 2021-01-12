@@ -170,14 +170,14 @@ class modelcmd(cmd2.Cmd):
         """list elements""" 
         if self.cmd_can_be_executed():
             if (args.path):
-                intId = self.msql.getIdperPath(self.mp.getAbsPath(args.path))
+                intId = self.msql.getIdperPath(self.mp.getToolAbsPath(args.path))
             else:
                 intId = self.msql.intCWI                
             listSons = self.msql.getSonsPerId(intId)
             dictTypeColours = dict(zip(md.listElementTypes,md.listElementTypesColours))
             if (args.links):
                 listLinks = []
-                for id, parentId, name, type in listSons:
+                for id, parentId, name, type, path in listSons:
                     listLinks += self.msql.getLinksPerId(id)
                 for source, destination in set(listLinks):
                     sourceData = self.msql.getElementNamePerId(source)
@@ -193,7 +193,7 @@ class modelcmd(cmd2.Cmd):
     def do_cd(self, args: List[str]):
         """Change working directory""" 
         if self.cmd_can_be_executed():
-            strBasename = self.mp.cd(args[0])
+            self.mp.cd(args[0])
             self.msql.selectCWIperPath(self.mp.getCWD())
             self.ppaged(args[0], chop=True)
             return;
@@ -214,19 +214,33 @@ class modelcmd(cmd2.Cmd):
             strtype = 'dataflow'
             if args.type:
                 strtype = args.type
-            self.msql.insertLink(self.mp.getAbsPath(args.origin), self.mp.getAbsPath(args.destination), strtype, args.name) 
+            self.msql.insertLink(self.mp.getToolAbsPath(args.origin), self.mp.getToolAbsPath(args.destination), strtype, args.name) 
             return;
 
     # CMD: mv #
+    def updatePath(self, listSons, oldPath, newPath):
+        for id, parentId, name, type, path in listSons:
+            self.msql.updatePathPerId(id, path.replace(oldPath, newPath, 1))
+            listSonsOfSons = self.msql.getSonsPerId(id)
+            self.updatePath(listSonsOfSons, oldPath, newPath)
+        return;
+    
     parser = argparse.ArgumentParser(description='mv elements')
     parser.add_argument('source', help="source", completer_method=cmd2.Cmd.path_complete)
     parser.add_argument('destination', help="destination", completer_method=cmd2.Cmd.path_complete)
     @cmd2.with_argparser(parser)
     @cmd2.with_category(strELEMENT_COMMANDS)
     def do_mv(self, args):
-        """Creates a link between two elements""" 
+        """moves an element""" 
         if self.cmd_can_be_executed():
             self.mp.mv(args.source, args.destination)
-            #self.msql.insertLink(self.mp.getAbsPath(args.origin), self.mp.getAbsPath(args.destination), strtype, args.name) 
-            return;
+            intSourceId = self.msql.getIdperPath(self.mp.getToolAbsPath(args.source))
+            intDestinationId = self.msql.getIdperPath(self.mp.getToolAbsPath(args.destination))
+            strSourceDirectory = self.mp.getToolAbsDirectory(args.source)
+            print (str(intSourceId) + " --> " + str(intDestinationId) + " --> " + str(strSourceDirectory))
+            self.msql.updateParentIdPerId(intSourceId, intDestinationId)
+            self.msql.updatePathPerId(intSourceId, self.mp.getToolAbsPath(args.source).replace(strSourceDirectory, self.mp.getToolAbsPath(args.destination), 1))
+            listSons = self.msql.getSonsPerId(intSourceId)
+            self.updatePath(listSons, strSourceDirectory, self.mp.getToolAbsPath(args.destination))
+        return;
 
