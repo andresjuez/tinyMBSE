@@ -169,6 +169,7 @@ class modelcmd(cmd2.Cmd):
     def do_ls(self, args):
         """list elements""" 
         if self.cmd_can_be_executed():
+            dictTypesSymbols = dict(zip(md.listLinkTypes, md.listLinkTypesSymbols))
             if (args.path):
                 intId = self.msql.getIdperPath(self.mp.getToolAbsPath(args.path))
             else:
@@ -179,10 +180,10 @@ class modelcmd(cmd2.Cmd):
                 listLinks = []
                 for id, parentId, name, type, path in listSons:
                     listLinks += self.msql.getLinksPerId(id)
-                for source, destination in set(listLinks):
+                for source, destination, name, type in set(listLinks):
                     sourceData = self.msql.getElementNamePerId(source)
                     destinationData = self.msql.getElementNamePerId(destination)
-                    print (ansi.style(sourceData[0][0], fg=dictTypeColours[sourceData[0][1]]) + "\t->\t" + ansi.style(destinationData[0][0], fg=dictTypeColours[destinationData[0][1]]))
+                    print (name + ": " + ansi.style(sourceData[0][0], fg=dictTypeColours[sourceData[0][1]]) + "\t" + dictTypesSymbols[type] + "\t" + ansi.style(destinationData[0][0], fg=dictTypeColours[destinationData[0][1]]))
             else:
                 self.ppaged("\t".join([ansi.style(i[2], fg=dictTypeColours[i[3]]) for i in listSons]), chop=True)
             return;
@@ -226,18 +227,19 @@ class modelcmd(cmd2.Cmd):
         return;
     
     parser = argparse.ArgumentParser(description='mv elements')
-    parser.add_argument('source', help="source", completer_method=cmd2.Cmd.path_complete)
-    parser.add_argument('destination', help="destination", completer_method=cmd2.Cmd.path_complete)
+    parser.add_argument('source', help="source element", completer_method=cmd2.Cmd.path_complete)
+    parser.add_argument('destination', help="destination folder", completer_method=cmd2.Cmd.path_complete)
     @cmd2.with_argparser(parser)
     @cmd2.with_category(strELEMENT_COMMANDS)
     def do_mv(self, args):
         """moves an element""" 
         if self.cmd_can_be_executed():
+            # manage Paths
             self.mp.mv(args.source, args.destination)
+            # manage DB
             intSourceId = self.msql.getIdperPath(self.mp.getToolAbsPath(args.source))
             intDestinationId = self.msql.getIdperPath(self.mp.getToolAbsPath(args.destination))
             strSourceDirectory = self.mp.getToolAbsDirectory(args.source)
-            print (str(intSourceId) + " --> " + str(intDestinationId) + " --> " + str(strSourceDirectory))
             self.msql.updateParentIdPerId(intSourceId, intDestinationId)
             self.msql.updatePathPerId(intSourceId, self.mp.getToolAbsPath(args.source).replace(strSourceDirectory, self.mp.getToolAbsPath(args.destination), 1))
             listSons = self.msql.getSonsPerId(intSourceId)

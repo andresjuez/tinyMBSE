@@ -108,7 +108,6 @@ class modelsql():
         self.db.commit()
     
     def updatePathPerId(self, intId, newPath):
-        print ("UPDATE " + md.strElementTableName + " SET path = '{}' WHERE id = '{}'".format(str(newPath), str(intId)))
         self.cursor.execute("UPDATE " + md.strElementTableName + " SET path = '{}' WHERE id = '{}'".format(str(newPath), str(intId)))
         self.db.commit()
 
@@ -119,10 +118,11 @@ class modelsql():
     def insertLink(self, path_origin, path_destination, type, name):
         sourceId = self.getIdperPath(path_origin)
         destinationId = self.getIdperPath(path_destination)
+        dictTypesSymbols = dict(zip(md.listLinkTypes, md.listLinkTypesSymbols))
         self.cursor.execute("INSERT INTO " + md.strLinkTableName + "(source, destination, type, name) VALUES(" + "{},{},'{}','{}'".format(sourceId, destinationId, str(type), str(name)) + ")")
         self.db.commit()
-        logging.info(type + "link inserted: " + path_origin + " -> " + path_destination)
+        logging.info(type + "link inserted: " + path_origin + " " + dictTypesSymbols[type] + " " + path_destination)
 
     def getLinksPerId(self, id):
-        self.cursor.execute("SELECT source, destination FROM " + md.strLinkTableName + "  WHERE source = '{}' OR destination = '{}'".format(str(id), str(id)))
+        self.cursor.execute("SELECT source, destination, name, type FROM " + md.strLinkTableName + "  WHERE source = '{}' OR destination = '{}'".format(str(id), str(id)))
         return self.cursor.fetchall()

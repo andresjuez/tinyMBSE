@@ -1,9 +1,10 @@
 # Model definition lists
 
-### elements def ###
+### elements ###
+# Definition
 listElementField = ['id', 'name', 'description', 'creationDate', 'version', 'type', 'parentId', 'path']
 listElementTypes = ['folder', 'function', 'block', 'component', 'data']
-# SQL
+# SQL - Please keep it consistent with Definiton
 strElementTableName = "element"
 listElementFieldSQL = ['INT PRIMARY KEY AUTO_INCREMENT UNIQUE',
                        'VARCHAR(255) NOT NULL',
@@ -13,16 +14,17 @@ listElementFieldSQL = ['INT PRIMARY KEY AUTO_INCREMENT UNIQUE',
                        'ENUM(' + ",".join(["'{}'".format(x) for x in listElementTypes]) + ") NOT NULL",
                        'INT REFERENCES ' + strElementTableName + '(id)',
                        'VARCHAR(1024)']
-# CMD 
+# CMD  - Please keep it consistent with Definiton
 listElementTypesColours = ['blue', 'bright_green', 'bright_cyan', 'bright_magenta', 'magenta']
 
 
 
 
 ### links def ###
+# Definition 
 listLinkField = ['id', 'name', 'description', 'creationDate', 'version', 'type', 'parentId', 'source', 'destination']
 listLinkTypes = ['dataflow', 'aggregation', 'link']
-# SQL
+# SQL  - Please keep it consistent with Definiton
 strLinkTableName = "link"
 listLinkFieldSQL = ['INT PRIMARY KEY AUTO_INCREMENT UNIQUE',
                     'VARCHAR(255) NOT NULL',
@@ -34,10 +36,11 @@ listLinkFieldSQL = ['INT PRIMARY KEY AUTO_INCREMENT UNIQUE',
                     'INT, FOREIGN KEY (source) REFERENCES ' + strElementTableName + '(id)', 
                     'INT, FOREIGN KEY (destination) REFERENCES ' + strElementTableName + '(id)']
 
-# CMD 
+# CMD  - Please keep it consistent with Definiton
 listLinkTypesSymbols = ['->', '-|>', '-']
 
 ### conveyed ###
+# Definition
 listConveyedField = ['link', 'element']
 # SQL
 strConveyedTableName = "conveyed"
