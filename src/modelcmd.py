@@ -124,7 +124,7 @@ class modelcmd(cmd2.Cmd):
                 self.mp.cd(args.model[0])
                 # manage DB
                 self.msql.intCWI = 0
-                self.msql.insertElement(args.model[0], 'folder', self.mp.getCWD())
+                self.msql.insertElement(args.model[0], 'folder', self.mp.getCWD(),0)
                 self.msql.selectCWIperPath(self.mp.getCWD())
 
     # CMD: mdel #
@@ -186,7 +186,7 @@ class modelcmd(cmd2.Cmd):
                 for source, destination, name, type in set(listLinks):
                     sourceData = self.msql.getElementNamePerId(source)
                     destinationData = self.msql.getElementNamePerId(destination)
-                    print (name + ": " + ansi.style(sourceData[0][0], fg=dictTypeColours[sourceData[0][1]]) + "\t" + dictTypesSymbols[type] + "\t" + ansi.style(destinationData[0][0], fg=dictTypeColours[destinationData[0][1]]))
+                    print (name + "\t:\t" + ansi.style(sourceData[0][0], fg=dictTypeColours[sourceData[0][1]]) + "\t" + dictTypesSymbols[type] + "\t" + ansi.style(destinationData[0][0], fg=dictTypeColours[destinationData[0][1]]))
             else:
                 self.ppaged("\t".join([ansi.style(i[2], fg=dictTypeColours[i[3]]) for i in listSons]), chop=True)
             return;
