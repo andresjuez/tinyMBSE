@@ -148,16 +148,19 @@ class modelcmd(cmd2.Cmd):
 
     parser = argparse.ArgumentParser(description='insert element')
     parser.add_argument('type', help="type of element to be created", choices=md.listElementTypes)
-    parser.add_argument('name', help="element name", choices_method=insert_options)
+    parser.add_argument('path', help="element path", completer_method=cmd2.Cmd.path_complete)
     @cmd2.with_argparser(parser)
     @cmd2.with_category(strELEMENT_COMMANDS)
     def do_insert(self, args):
         """Creates insert element""" 
         if self.cmd_can_be_executed():
             # manage Paths
-            self.mp.newFolder(args.name)
+            self.mp.newFolder(args.path)
             # manage DB
-            self.msql.insertElement(args.name, args.type, self.mp.getCWD()+"/"+args.name)
+            strPath = self.mp.getToolAbsPath(args.path)
+            strName = self.mp.getNameFromPath(args.path)
+            intParentId = self.msql.getIdperPath(self.mp.getToolAbsDirectory(args.path))
+            self.msql.insertElement(strName, args.type, strPath, intParentId)
             return;
 
     # CMD: ls #

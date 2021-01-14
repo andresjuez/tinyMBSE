@@ -42,6 +42,9 @@ class modelpath():
     def getToolAbsDirectory(self, strRelativePath):
         return os.path.dirname(os.path.abspath(strRelativePath).replace(self.TINYMBSE_PATH,''))
 
+    def getNameFromPath(self, strPath):
+        return os.path.basename(strPath)
+
     def cd(self, foldername): 
         return os.chdir(foldername)
         
