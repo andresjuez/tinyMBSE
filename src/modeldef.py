@@ -3,7 +3,7 @@
 ### elements ###
 # Definition
 listElementField = ['id', 'name', 'description', 'creationDate', 'version', 'type', 'parentId', 'path']
-listElementTypes = ['folder', 'function', 'block', 'component', 'data']
+listElementTypes = ['folder', 'function', 'block', 'component', 'data', 'actor', 'usecase']
 # SQL - Please keep it consistent with Definiton
 strElementTableName = "element"
 listElementFieldSQL = ['INT PRIMARY KEY AUTO_INCREMENT UNIQUE',
@@ -15,7 +15,7 @@ listElementFieldSQL = ['INT PRIMARY KEY AUTO_INCREMENT UNIQUE',
                        'INT REFERENCES ' + strElementTableName + '(id)',
                        'VARCHAR(1024)']
 # CMD  - Please keep it consistent with Definiton
-listElementTypesColours = ['blue', 'bright_green', 'bright_cyan', 'bright_magenta', 'magenta']
+listElementTypesColours = ['blue', 'bright_green', 'bright_cyan', 'bright_magenta', 'magenta', 'bright_yellow', 'on_blue']
 
 
 

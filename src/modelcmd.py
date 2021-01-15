@@ -174,6 +174,7 @@ class modelcmd(cmd2.Cmd):
         if self.cmd_can_be_executed():
             dictTypesSymbols = dict(zip(md.listLinkTypes, md.listLinkTypesSymbols))
             dictTypeColours = dict(zip(md.listElementTypes,md.listElementTypesColours))
+
             if (args.path):
                 intId = self.msql.getIdperPath(self.mp.getToolAbsPath(args.path))
                 listSons = self.msql.getSonsPerId(intId)
@@ -191,7 +192,14 @@ class modelcmd(cmd2.Cmd):
                     destinationData = self.msql.getElementNamePerId(destination)
                     print (name + "\t:\t" + ansi.style(sourceData[0][0], fg=dictTypeColours[sourceData[0][1]]) + "\t" + dictTypesSymbols[type] + "\t" + ansi.style(destinationData[0][0], fg=dictTypeColours[destinationData[0][1]]))
             else:
-                self.ppaged("\t".join([ansi.style(i[2], fg=dictTypeColours[i[3]]) for i in listSons]), chop=True)
+                strLine = ""
+                for id, parentId, name, type, path in listSons:
+                    listSonsOfSons = self.msql.getSonsPerId(id)
+                    if listSonsOfSons:
+                        strLine += ansi.style('(+)'+name, fg=dictTypeColours[type]) + "\t" 
+                    else:
+                        strLine += ansi.style(name, fg=dictTypeColours[type]) + "\t" 
+                self.ppaged(strLine, chop=True)
             return;
 
     # CMD: cd #
