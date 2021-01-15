@@ -33,8 +33,8 @@ listLinkFieldSQL = ['INT PRIMARY KEY AUTO_INCREMENT UNIQUE',
                     'FLOAT',
                     'ENUM(' + ",".join(["'{}'".format(x) for x in listLinkTypes]) + ") NOT NULL",
                     'INT REFERENCES ' + strLinkTableName + '(id)',
-                    'INT, FOREIGN KEY (source) REFERENCES ' + strElementTableName + '(id)', 
-                    'INT, FOREIGN KEY (destination) REFERENCES ' + strElementTableName + '(id)']
+                    'INT, FOREIGN KEY (source) REFERENCES ' + strElementTableName + '(id) ON DELETE CASCADE', 
+                    'INT, FOREIGN KEY (destination) REFERENCES ' + strElementTableName + '(id) ON DELETE CASCADE']
 
 # CMD  - Please keep it consistent with Definiton
 listLinkTypesSymbols = ['->', '-|>', '-']

@@ -173,16 +173,19 @@ class modelcmd(cmd2.Cmd):
         """list elements""" 
         if self.cmd_can_be_executed():
             dictTypesSymbols = dict(zip(md.listLinkTypes, md.listLinkTypesSymbols))
+            dictTypeColours = dict(zip(md.listElementTypes,md.listElementTypesColours))
             if (args.path):
                 intId = self.msql.getIdperPath(self.mp.getToolAbsPath(args.path))
+                listSons = self.msql.getSonsPerId(intId)
+                listLinks = self.msql.getLinksPerId(intId)
             else:
-                intId = self.msql.intCWI                
-            listSons = self.msql.getSonsPerId(intId)
-            dictTypeColours = dict(zip(md.listElementTypes,md.listElementTypesColours))
-            if (args.links):
+                intId = self.msql.intCWI
+                listSons = self.msql.getSonsPerId(intId)
                 listLinks = []
                 for id, parentId, name, type, path in listSons:
                     listLinks += self.msql.getLinksPerId(id)
+
+            if (args.links):
                 for source, destination, name, type in set(listLinks):
                     sourceData = self.msql.getElementNamePerId(source)
                     destinationData = self.msql.getElementNamePerId(destination)
