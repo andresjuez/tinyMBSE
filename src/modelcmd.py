@@ -165,7 +165,8 @@ class modelcmd(cmd2.Cmd):
 
     # CMD: ls #
     parser = argparse.ArgumentParser(description='list elements and links')
-    parser.add_argument('-l', '--links', required=False, default=False, action='store_true', help="host to connect to database")
+    parser.add_argument('-l', '--links', required=False, default=False, action='store_true', help="show links")
+    parser.add_argument('-p', '--showpath', required=False, default=False, action='store_true', help="show complete path instead of just name")
     parser.add_argument('path', help="path", nargs='?', completer_method=cmd2.Cmd.path_complete)
     @cmd2.with_argparser(parser)
     @cmd2.with_category(strELEMENT_COMMANDS)
@@ -184,13 +185,20 @@ class modelcmd(cmd2.Cmd):
                 listSons = self.msql.getSonsPerId(intId)
                 listLinks = []
                 for id, parentId, name, type, path in listSons:
-                    listLinks += self.msql.getLinksPerId(id)
+                    links = self.msql.getLinksPerId(id)
+                    for link in links:
+                        if link not in listLinks:
+                            listLinks.append(link)
 
             if (args.links):
-                for source, destination, name, type in set(listLinks):
-                    sourceData = self.msql.getElementNamePerId(source)
-                    destinationData = self.msql.getElementNamePerId(destination)
-                    print (name + "\t:\t" + ansi.style(sourceData[0][0], fg=dictTypeColours[sourceData[0][1]]) + "\t" + dictTypesSymbols[type] + "\t" + ansi.style(destinationData[0][0], fg=dictTypeColours[destinationData[0][1]]))
+                for source, destination, name, type in listLinks:
+                    sourceData = self.msql.getElementPerId(source)
+                    destinationData = self.msql.getElementPerId(destination)
+                    intIndex = 1 #index for name in listElementField
+                    if (args.showpath):
+                        intIndex = 7 #index for path in listElementField
+                        #5 is the index for type in listElementField
+                    print ('{:<15} :: {:<30}{:^5}{:<30}'.format(name, ansi.style(sourceData[intIndex], fg=dictTypeColours[sourceData[5]]), dictTypesSymbols[type], ansi.style(destinationData[intIndex], fg=dictTypeColours[destinationData[5]])))
             else:
                 strLine = ""
                 for id, parentId, name, type, path in listSons:

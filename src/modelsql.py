@@ -92,9 +92,9 @@ class modelsql():
         self.cursor.execute("SELECT id FROM " + md.strElementTableName + " WHERE path = '{}'".format(path))
         return self._fetchall(0)[0]
 
-    def getElementNamePerId(self, id):
-        self.cursor.execute("SELECT name, type FROM " + md.strElementTableName + " WHERE id = '{}'".format(id))
-        return self.cursor.fetchall()
+    def getElementPerId(self, id):
+        self.cursor.execute("SELECT " + ",".join(md.listElementField) + " FROM " + md.strElementTableName + " WHERE id = '{}'".format(id))
+        return self.cursor.fetchall()[0]
 
     def selectCWIperPath(self, path):
         self.intCWI = self.getIdperPath(path)

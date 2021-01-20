@@ -1,0 +1,51 @@
+# This script is used to test all commands of tinyMBSE tool
+#It is assumed that the connection with mysql database is already created
+
+# database commands
+mls
+mnew testingmodel
+mnew testingmodel2
+mdel testingmodel2
+msel testingmodel
+
+# elements commands
+# actors
+insert folder operationalAnalysis
+insert actor operationalAnalysis/operators
+insert actor operationalAnalysis/operators/OST
+insert actor operationalAnalysis/operators/EST
+insert actor operationalAnalysis/MST
+mv operationalAnalysis/MST operationalAnalysis/operators/
+
+# functions
+insert folder functionalAnalysis
+insert block functionalAnalysis/externalEntity1
+insert block functionalAnalysis/externalEntity2
+insert block functionalAnalysis/externalEntity3
+insert actor functionalAnalysis/user
+insert function functionalAnalysis/process
+insert function functionalAnalysis/process/recieveData
+insert function functionalAnalysis/process/processData
+insert function functionalAnalysis/process/processData/cleanDuplicates
+insert function functionalAnalysis/process/processData/filterData
+insert function functionalAnalysis/process/processData/computeTrend
+insert block functionalAnalysis/process/storeData
+insert function functionalAnalysis/process/generateReport
+
+ln -n EE1data functionalAnalysis/externalEntity1 functionalAnalysis/process/recieveData
+ln -n EE2data functionalAnalysis/externalEntity2 functionalAnalysis/process/recieveData
+ln -n EE3data functionalAnalysis/externalEntity3 functionalAnalysis/process/recieveData
+ln -n data functionalAnalysis/process/recieveData functionalAnalysis/process/processData/cleanDuplicates
+ln -n data functionalAnalysis/process/recieveData functionalAnalysis/process/storeData
+ln -n cleanData functionalAnalysis/process/processData/cleanDuplicates functionalAnalysis/process/processData/filterData
+ln -n cleanData functionalAnalysis/process/processData/cleanDuplicates functionalAnalysis/process/storeData
+ln -n filteredData functionalAnalysis/process/processData/filterData functionalAnalysis/process/processData/computeTrend
+ln -n filteredData functionalAnalysis/process/processData/filterData functionalAnalysis/process/storeData
+ln -n trendData functionalAnalysis/process/processData/computeTrend functionalAnalysis/process/storeData
+ln -n getReport functionalAnalysis/user functionalAnalysis/process/generateReport
+ln -n storedData functionalAnalysis/process/storeData functionalAnalysis/process/generateReport
+ln -n report functionalAnalysis/process/generateReport functionalAnalysis/user
+
+
+# end the script
+#mdel testingmodel
