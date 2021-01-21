@@ -126,3 +126,8 @@ class modelsql():
     def getLinksPerId(self, id):
         self.cursor.execute("SELECT source, destination, name, type FROM " + md.strLinkTableName + "  WHERE source = '{}' OR destination = '{}'".format(str(id), str(id)))
         return self.cursor.fetchall()
+
+    
+    def deleteElementPerId(self, intId):
+        self.cursor.execute("DELETE FROM " + md.strElementTableName + " WHERE id = '{}'".format(str(intId)))
+        self.db.commit()

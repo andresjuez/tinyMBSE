@@ -167,7 +167,7 @@ class modelcmd(cmd2.Cmd):
     parser = argparse.ArgumentParser(description='list elements and links')
     parser.add_argument('-l', '--links', required=False, default=False, action='store_true', help="show links")
     parser.add_argument('-p', '--showpath', required=False, default=False, action='store_true', help="show complete path instead of just name")
-    parser.add_argument('path', help="path", nargs='?', completer_method=cmd2.Cmd.path_complete)
+    parser.add_argument('path', help="path", nargs='?', default='.', completer_method=cmd2.Cmd.path_complete)
     @cmd2.with_argparser(parser)
     @cmd2.with_category(strELEMENT_COMMANDS)
     def do_ls(self, args):
@@ -176,19 +176,14 @@ class modelcmd(cmd2.Cmd):
             dictTypesSymbols = dict(zip(md.listLinkTypes, md.listLinkTypesSymbols))
             dictTypeColours = dict(zip(md.listElementTypes,md.listElementTypesColours))
 
-            if (args.path):
-                intId = self.msql.getIdperPath(self.mp.getToolAbsPath(args.path))
-                listSons = self.msql.getSonsPerId(intId)
-                listLinks = self.msql.getLinksPerId(intId)
-            else:
-                intId = self.msql.intCWI
-                listSons = self.msql.getSonsPerId(intId)
-                listLinks = []
-                for id, parentId, name, type, path in listSons:
-                    links = self.msql.getLinksPerId(id)
-                    for link in links:
-                        if link not in listLinks:
-                            listLinks.append(link)
+            intId = self.msql.getIdperPath(self.mp.getToolAbsPath(args.path))
+            listSons = self.msql.getSonsPerId(intId)
+            listLinks = []
+            for id, parentId, name, type, path in listSons:
+                links = self.msql.getLinksPerId(id)
+                for link in links:
+                    if link not in listLinks:
+                        listLinks.append(link)
 
             if (args.links):
                 for source, destination, name, type in listLinks:
@@ -246,8 +241,7 @@ class modelcmd(cmd2.Cmd):
             self.msql.updatePathPerId(id, path.replace(oldPath, newPath, 1))
             listSonsOfSons = self.msql.getSonsPerId(id)
             self.updatePath(listSonsOfSons, oldPath, newPath)
-        return;
-    
+        return;  
     parser = argparse.ArgumentParser(description='mv elements')
     parser.add_argument('source', help="source element", completer_method=cmd2.Cmd.path_complete)
     parser.add_argument('destination', help="destination folder", completer_method=cmd2.Cmd.path_complete)
@@ -266,5 +260,28 @@ class modelcmd(cmd2.Cmd):
             self.msql.updatePathPerId(intSourceId, self.mp.getToolAbsPath(args.source).replace(strSourceDirectory, self.mp.getToolAbsPath(args.destination), 1))
             listSons = self.msql.getSonsPerId(intSourceId)
             self.updatePath(listSons, strSourceDirectory, self.mp.getToolAbsPath(args.destination))
+        return;
+
+    # CMD: rm #
+    def deleteDescendants(self, listSons):
+        for id, parentId, name, type, path in listSons:
+            listSonsOfSons = self.msql.getSonsPerId(id)
+            self.deleteDescendants(listSonsOfSons)
+            self.msql.deleteElementPerId(id)
+        return;
+    parser = argparse.ArgumentParser(description='delete elements and its descendants')
+    parser.add_argument('path', help="path to be deleted", completer_method=cmd2.Cmd.path_complete)
+    @cmd2.with_argparser(parser)
+    @cmd2.with_category(strELEMENT_COMMANDS)
+    def do_rm(self, args):
+        """deletes an element and its descendants""" 
+        if self.cmd_can_be_executed():
+            # manage Paths
+            self.mp.removeFolder(args.path)
+            # manage DB
+            intId = self.msql.getIdperPath(self.mp.getToolAbsPath(args.path))
+            listSons = self.msql.getSonsPerId(intId)
+            self.deleteDescendants(listSons)
+            self.msql.deleteElementPerId(intId)
         return;
 
