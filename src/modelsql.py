@@ -100,7 +100,7 @@ class modelsql():
         self.intCWI = self.getIdperPath(path)
 
     def getSonsPerId(self, intId):
-        self.cursor.execute("SELECT id, parentId, name, type, path FROM element WHERE parentId = '{}'".format(str(intId)))
+        self.cursor.execute("SELECT " + ",".join(md.listElementField) + " FROM element WHERE parentId = '{}'".format(str(intId)))
         return self.cursor.fetchall()
 
     def updateNamePerId(self, intId, newName):

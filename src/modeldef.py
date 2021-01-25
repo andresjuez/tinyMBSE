@@ -2,6 +2,7 @@
 
 ### elements ###
 # Definition
+# the indices        0     1       2              3               4          5       6           7
 listElementField = ['id', 'name', 'description', 'creationDate', 'version', 'type', 'parentId', 'path']
 listElementTypes = ['folder', 'function', 'block', 'component', 'data', 'actor', 'usecase']
 # SQL - Please keep it consistent with Definiton

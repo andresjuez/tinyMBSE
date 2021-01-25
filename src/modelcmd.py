@@ -144,7 +144,7 @@ class modelcmd(cmd2.Cmd):
     # CMD: insert #
     def insert_options(self) -> List[str]:
         """insert options"""
-        return [item[2] for item in self.msql.getSonsPerId(self.msql.intCWI)] 
+        return [element[1] for element in self.msql.getSonsPerId(self.msql.intCWI)] #element[1] is the name
 
     parser = argparse.ArgumentParser(description='insert element')
     parser.add_argument('type', help="type of element to be created", choices=md.listElementTypes)
@@ -179,8 +179,8 @@ class modelcmd(cmd2.Cmd):
             intId = self.msql.getIdperPath(self.mp.getToolAbsPath(args.path))
             listSons = self.msql.getSonsPerId(intId)
             listLinks = []
-            for id, parentId, name, type, path in listSons:
-                links = self.msql.getLinksPerId(id)
+            for element in listSons:
+                links = self.msql.getLinksPerId(element[0]) #element[0] is the id
                 for link in links:
                     if link not in listLinks:
                         listLinks.append(link)
@@ -196,12 +196,12 @@ class modelcmd(cmd2.Cmd):
                     print ('{:<15} :: {:<30}{:^5}{:<30}'.format(name, ansi.style(sourceData[intIndex], fg=dictTypeColours[sourceData[5]]), dictTypesSymbols[type], ansi.style(destinationData[intIndex], fg=dictTypeColours[destinationData[5]])))
             else:
                 strLine = ""
-                for id, parentId, name, type, path in listSons:
-                    listSonsOfSons = self.msql.getSonsPerId(id)
+                for element in listSons:
+                    listSonsOfSons = self.msql.getSonsPerId(element[0]) #element[0] is the id
                     if listSonsOfSons:
-                        strLine += ansi.style('(+)'+name, fg=dictTypeColours[type]) + "\t" 
+                        strLine += ansi.style('(+)' + element[1], fg=dictTypeColours[element[5]]) + "\t" #element[1] is the name, element[5] is the type
                     else:
-                        strLine += ansi.style(name, fg=dictTypeColours[type]) + "\t" 
+                        strLine += ansi.style(element[1], fg=dictTypeColours[element[5]]) + "\t" #element[1] is the name, element[5] is the type
                 self.ppaged(strLine, chop=True)
             return;
 
@@ -237,9 +237,9 @@ class modelcmd(cmd2.Cmd):
 
     # CMD: mv #
     def updatePath(self, listSons, oldPath, newPath):
-        for id, parentId, name, type, path in listSons:
-            self.msql.updatePathPerId(id, path.replace(oldPath, newPath, 1))
-            listSonsOfSons = self.msql.getSonsPerId(id)
+        for element in listSons:
+            self.msql.updatePathPerId(element[0], path.replace(oldPath, newPath, 1)) #element[0] is the id
+            listSonsOfSons = self.msql.getSonsPerId(element[0]) #element[0] is the id
             self.updatePath(listSonsOfSons, oldPath, newPath)
         return;  
     parser = argparse.ArgumentParser(description='mv elements')
@@ -264,10 +264,10 @@ class modelcmd(cmd2.Cmd):
 
     # CMD: rm #
     def deleteDescendants(self, listSons):
-        for id, parentId, name, type, path in listSons:
-            listSonsOfSons = self.msql.getSonsPerId(id)
+        for element in listSons:
+            listSonsOfSons = self.msql.getSonsPerId(element[0]) #element[0] is the id
             self.deleteDescendants(listSonsOfSons)
-            self.msql.deleteElementPerId(id)
+            self.msql.deleteElementPerId(element[0]) #element[0] is the id
         return;
     parser = argparse.ArgumentParser(description='delete elements and its descendants')
     parser.add_argument('path', help="path to be deleted", completer_method=cmd2.Cmd.path_complete)

@@ -27,9 +27,9 @@ class modelpath():
         self.newFolder(name)
         self.cd(name)
         strCD = os.getcwd()
-        for sonId, parentId, sonName, type, path in modelsql.getSonsPerId(id):
+        for element in modelsql.getSonsPerId(id):
             self.cd(strCD)
-            self.initFolders(sonName, sonId, modelsql)
+            self.initFolders(element[1], element[0], modelsql)
         self.cd(self.TINYMBSE_PATH)
         return
 
