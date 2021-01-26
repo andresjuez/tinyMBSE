@@ -22,7 +22,8 @@ listElementTypesColours = ['blue', 'bright_green', 'bright_cyan', 'bright_magent
 
 
 ### links def ###
-# Definition 
+# Definition
+# the indices     0     1       2              3               4          5       6           7         8
 listLinkField = ['id', 'name', 'description', 'creationDate', 'version', 'type', 'parentId', 'source', 'destination']
 listLinkTypes = ['dataflow', 'aggregation', 'link']
 # SQL  - Please keep it consistent with Definiton

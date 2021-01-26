@@ -186,14 +186,14 @@ class modelcmd(cmd2.Cmd):
                         listLinks.append(link)
 
             if (args.links):
-                for source, destination, name, type in listLinks:
-                    sourceData = self.msql.getElementPerId(source)
-                    destinationData = self.msql.getElementPerId(destination)
+                for link in listLinks:
+                    sourceData = self.msql.getElementPerId(link[7]) #link[7] is the source Id
+                    destinationData = self.msql.getElementPerId(link[8]) #link[8] is the destination Id
                     intIndex = 1 #index for name in listElementField
                     if (args.showpath):
                         intIndex = 7 #index for path in listElementField
                         #5 is the index for type in listElementField
-                    print ('{:<15} :: {:<30}{:^5}{:<30}'.format(name, ansi.style(sourceData[intIndex], fg=dictTypeColours[sourceData[5]]), dictTypesSymbols[type], ansi.style(destinationData[intIndex], fg=dictTypeColours[destinationData[5]])))
+                    print ('{:<15} :: {:<30}{:^5}{:<30}'.format(link[1], ansi.style(sourceData[intIndex], fg=dictTypeColours[sourceData[5]]), dictTypesSymbols[link[5]], ansi.style(destinationData[intIndex], fg=dictTypeColours[destinationData[5]])))
             else:
                 strLine = ""
                 for element in listSons:
