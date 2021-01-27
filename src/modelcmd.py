@@ -6,6 +6,7 @@ import modelsql as msql
 import modelpath as mp
 import modeldef as md
 import logging
+from prettytable import PrettyTable
 
 class modelcmd(cmd2.Cmd):
     """ This manages the model in the SQL database """
@@ -166,7 +167,6 @@ class modelcmd(cmd2.Cmd):
     # CMD: ls #
     parser = argparse.ArgumentParser(description='list elements and links')
     parser.add_argument('-l', '--links', required=False, default=False, action='store_true', help="show links")
-    parser.add_argument('-p', '--showpath', required=False, default=False, action='store_true', help="show complete path instead of just name")
     parser.add_argument('path', help="path", nargs='?', default='.', completer_method=cmd2.Cmd.path_complete)
     @cmd2.with_argparser(parser)
     @cmd2.with_category(strELEMENT_COMMANDS)
@@ -186,14 +186,16 @@ class modelcmd(cmd2.Cmd):
                         listLinks.append(link)
 
             if (args.links):
+                t = PrettyTable(['Name', 'Source', 'Type', 'Destination'])
+                t.align = "l"
                 for link in listLinks:
                     sourceData = self.msql.getElementPerId(link[7]) #link[7] is the source Id
                     destinationData = self.msql.getElementPerId(link[8]) #link[8] is the destination Id
-                    intIndex = 1 #index for name in listElementField
-                    if (args.showpath):
-                        intIndex = 7 #index for path in listElementField
-                        #5 is the index for type in listElementField
-                    print ('{:<15} :: {:<30}{:^5}{:<30}'.format(link[1], ansi.style(sourceData[intIndex], fg=dictTypeColours[sourceData[5]]), dictTypesSymbols[link[5]], ansi.style(destinationData[intIndex], fg=dictTypeColours[destinationData[5]])))
+                    t.add_row([link[1],#link[1] is the name
+                               ansi.style(self.mp.getRelativePath(sourceData[7]), fg=dictTypeColours[sourceData[5]]),
+                               dictTypesSymbols[link[5]],
+                               ansi.style(self.mp.getRelativePath(destinationData[7]), fg=dictTypeColours[destinationData[5]])]) #element[7] is path, element[5] is type
+                print(t)
             else:
                 strLine = ""
                 for element in listSons:
