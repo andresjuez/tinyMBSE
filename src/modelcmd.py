@@ -5,6 +5,7 @@ from typing import List
 import modelsql as msql
 import modelpath as mp
 import modeldef as md
+import modelplot as mplt
 import logging
 from prettytable import PrettyTable
 
@@ -175,17 +176,17 @@ class modelcmd(cmd2.Cmd):
         if self.cmd_can_be_executed():
             dictTypesSymbols = dict(zip(md.listLinkTypes, md.listLinkTypesSymbols))
             dictTypeColours = dict(zip(md.listElementTypes,md.listElementTypesColours))
-
             intId = self.msql.getIdperPath(self.mp.getToolAbsPath(args.path))
-            listSons = self.msql.getSonsPerId(intId)
-            listLinks = []
-            for element in listSons:
-                links = self.msql.getLinksPerId(element[0]) #element[0] is the id
-                for link in links:
-                    if link not in listLinks:
-                        listLinks.append(link)
 
             if (args.links):
+                listDescendants = []
+                self.msql.getDescendantsPerId(intId, listDescendants)
+                listLinks = []                
+                for element in listDescendants:
+                    links = self.msql.getLinksPerId(element[0]) #element[0] is the id
+                    for link in links:
+                        if link not in listLinks:
+                            listLinks.append(link)
                 t = PrettyTable(['Name', 'Source', 'Type', 'Destination'])
                 t.align = "l"
                 for link in listLinks:
@@ -197,6 +198,7 @@ class modelcmd(cmd2.Cmd):
                                ansi.style(self.mp.getRelativePath(destinationData[7]), fg=dictTypeColours[destinationData[5]])]) #element[7] is path, element[5] is type
                 print(t)
             else:
+                listSons = self.msql.getSonsPerId(intId)
                 strLine = ""
                 for element in listSons:
                     listSonsOfSons = self.msql.getSonsPerId(element[0]) #element[0] is the id
@@ -287,3 +289,13 @@ class modelcmd(cmd2.Cmd):
             self.msql.deleteElementPerId(intId)
         return;
 
+    # CMD: plot #
+    parser = argparse.ArgumentParser(description='generates a plot')
+    parser.add_argument('path', help="path to be deleted", completer_method=cmd2.Cmd.path_complete)
+    @cmd2.with_argparser(parser)
+    @cmd2.with_category(strELEMENT_COMMANDS)
+    def do_plot(self, args):
+        """generates a plot through plantUML"""
+        if self.cmd_can_be_executed():
+            mplt.plot(self.msql, args.path)
+        return;

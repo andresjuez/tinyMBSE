@@ -103,6 +103,12 @@ class modelsql():
         self.cursor.execute("SELECT " + ",".join(md.listElementField) + " FROM element WHERE parentId = '{}'".format(str(intId)))
         return self.cursor.fetchall()
 
+    def getDescendantsPerId(self, intId, listDescendants):
+        listSons = self.getSonsPerId(intId)
+        listDescendants.extend(listSons)
+        for element in listSons:
+            self.getDescendantsPerId(element[0], listDescendants)
+
     def updateNamePerId(self, intId, newName):
         self.cursor.execute("UPDATE " + md.strElementTableName + " SET name = '{}' WHERE id = '{}'".format(str(newName), str(intId)))
         self.db.commit()
