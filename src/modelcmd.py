@@ -6,8 +6,8 @@ import modelsql as msql
 import modelpath as mp
 import modeldef as md
 import modelplot as mplt
+import modelterm as mt
 import logging
-from prettytable import PrettyTable
 
 class modelcmd(cmd2.Cmd):
     """ This manages the model in the SQL database """
@@ -168,45 +168,17 @@ class modelcmd(cmd2.Cmd):
     # CMD: ls #
     parser = argparse.ArgumentParser(description='list elements and links')
     parser.add_argument('-l', '--links', required=False, default=False, action='store_true', help="show links")
+    parser.add_argument('-d', '--local_directory_info', required=False, default=False, action='store_true', help="list links of the elements in this directory, showing the low level details")
+    parser.add_argument('-D', '--local_directory_info_only', required=False, default=False, action='store_true', help="list links of the elements in this directory")
+    parser.add_argument('-t', '--tree', required=False, default=False, action='store_true', help="show tree of elements")
     parser.add_argument('path', help="path", nargs='?', default='.', completer_method=cmd2.Cmd.path_complete)
     @cmd2.with_argparser(parser)
     @cmd2.with_category(strELEMENT_COMMANDS)
     def do_ls(self, args):
         """list elements""" 
         if self.cmd_can_be_executed():
-            dictTypesSymbols = dict(zip(md.listLinkTypes, md.listLinkTypesSymbols))
-            dictTypeColours = dict(zip(md.listElementTypes,md.listElementTypesColours))
             intId = self.msql.getIdperPath(self.mp.getToolAbsPath(args.path))
-
-            if (args.links):
-                listDescendants = []
-                self.msql.getDescendantsPerId(intId, listDescendants)
-                listLinks = []                
-                for element in listDescendants:
-                    links = self.msql.getLinksPerId(element[0]) #element[0] is the id
-                    for link in links:
-                        if link not in listLinks:
-                            listLinks.append(link)
-                t = PrettyTable(['Name', 'Source', 'Type', 'Destination'])
-                t.align = "l"
-                for link in listLinks:
-                    sourceData = self.msql.getElementPerId(link[7]) #link[7] is the source Id
-                    destinationData = self.msql.getElementPerId(link[8]) #link[8] is the destination Id
-                    t.add_row([link[1],#link[1] is the name
-                               ansi.style(self.mp.getRelativePath(sourceData[7]), fg=dictTypeColours[sourceData[5]]),
-                               dictTypesSymbols[link[5]],
-                               ansi.style(self.mp.getRelativePath(destinationData[7]), fg=dictTypeColours[destinationData[5]])]) #element[7] is path, element[5] is type
-                print(t)
-            else:
-                listSons = self.msql.getSonsPerId(intId)
-                strLine = ""
-                for element in listSons:
-                    listSonsOfSons = self.msql.getSonsPerId(element[0]) #element[0] is the id
-                    if listSonsOfSons:
-                        strLine += ansi.style('(+)' + element[1], fg=dictTypeColours[element[5]]) + "\t" #element[1] is the name, element[5] is the type
-                    else:
-                        strLine += ansi.style(element[1], fg=dictTypeColours[element[5]]) + "\t" #element[1] is the name, element[5] is the type
-                self.ppaged(strLine, chop=True)
+            mt.printterm (self, self.msql, self.mp, intId, args.links, args.local_directory_info, args.local_directory_info_only, args.tree)
             return;
 
     # CMD: cd #
