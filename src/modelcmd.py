@@ -8,6 +8,7 @@ import modeldef as md
 import modelplot as mplt
 import modelterm as mt
 import logging
+from prettytable import PrettyTable
 
 class modelcmd(cmd2.Cmd):
     """ This manages the model in the SQL database """
@@ -214,7 +215,7 @@ class modelcmd(cmd2.Cmd):
     # CMD: mv #
     def updatePath(self, listSons, oldPath, newPath):
         for element in listSons:
-            self.msql.updatePathPerId(element[0], path.replace(oldPath, newPath, 1)) #element[0] is the id
+            self.msql.updatePathPerId(element[0], element[7].replace(oldPath, newPath, 1)) #element[0] is the id
             listSonsOfSons = self.msql.getSonsPerId(element[0]) #element[0] is the id
             self.updatePath(listSonsOfSons, oldPath, newPath)
         return;  
@@ -261,6 +262,25 @@ class modelcmd(cmd2.Cmd):
             self.msql.deleteElementPerId(intId)
         return;
 
+    # CMD: info #
+    parser = argparse.ArgumentParser(description='provides the information of a given element')
+    parser.add_argument('path', help="path", nargs='?', default='.', completer_method=cmd2.Cmd.path_complete)
+    @cmd2.with_argparser(parser)
+    @cmd2.with_category(strELEMENT_COMMANDS)
+    def do_info(self, args):
+        """generates a plot through plantUML"""
+        if self.cmd_can_be_executed():
+            intId = self.msql.getIdperPath(self.mp.getToolAbsPath(args.path))
+            element = self.msql.getElementPerId(intId)
+            dictElementFieldvsContents = dict(zip(md.listElementField, list(element)))
+            t = PrettyTable(['Field', 'Value'])
+            t.align = "l"
+            for field, content in dictElementFieldvsContents.items():
+                t.add_row([field, content])
+            print(t)
+        return;
+
+    
     # CMD: plot #
     parser = argparse.ArgumentParser(description='generates a plot')
     parser.add_argument('path', help="path to be deleted", completer_method=cmd2.Cmd.path_complete)

@@ -28,7 +28,7 @@ def printterm(mcmd, msql, mp, intId, bLinks, bLocalDirectoryInfo, bLocalDirector
         if (bLocalDirectoryInfo):
             t = PrettyTable(['Name', 'Source', 'Source(details)', 'Type', 'Destination(details)', 'Destination'])
         elif (bLocalDirectoryInfoOnly):
-            t = PrettyTable(['Name', 'Source', 'Type', 'Destination(Local)'])
+            t = PrettyTable(['Name', 'Source', 'Type', 'Destination'])
         else:
             t = PrettyTable(['Name', 'Source', 'Type', 'Destination'])
         t.align = "l"
@@ -90,6 +90,18 @@ def printterm(mcmd, msql, mp, intId, bLinks, bLocalDirectoryInfo, bLocalDirector
                     strLine += ansi.style(element[1], fg=dictTypeColours[element[5]]) + "\t" #element[1] is the name, element[5] is the type
             mcmd.ppaged(strLine, chop=True)
         else:
-            print ("to be done")
+            print (".")
+            strIndent = ""
+            for element in listSons:
+                printTreeLeaf (msql, element, strIndent, dictTypeColours)
     return;
 
+
+def printTreeLeaf (msql, element, strIndent, dictTypeColours):
+    listSons = msql.getSonsPerId(element[0]) #element[0] is the id
+    print(ansi.style(strIndent + '└── ' + element[1], fg=dictTypeColours[element[5]])) #element[1] is the name, element[5] is the type
+    strIndentSons = strIndent + "    "
+    for elementSon in listSons:
+        printTreeLeaf (msql, elementSon, strIndentSons, dictTypeColours)
+    return;
+        
