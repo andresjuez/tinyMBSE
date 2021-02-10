@@ -136,3 +136,7 @@ class modelsql():
     def deleteElementPerId(self, intId):
         self.cursor.execute("DELETE FROM " + md.strElementTableName + " WHERE id = '{}'".format(str(intId)))
         self.db.commit()
+
+    def deleteLinkPerId(self, intSourceId, intDestinationId):
+        self.cursor.execute("DELETE FROM " + md.strLinkTableName + " WHERE source = '{}' AND destination = '{}'".format(str(intSourceId), str(intDestinationId))) 
+        self.db.commit()

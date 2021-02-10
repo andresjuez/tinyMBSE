@@ -246,20 +246,27 @@ class modelcmd(cmd2.Cmd):
             self.deleteDescendants(listSonsOfSons)
             self.msql.deleteElementPerId(element[0]) #element[0] is the id
         return;
-    parser = argparse.ArgumentParser(description='delete elements and its descendants')
+    parser = argparse.ArgumentParser(description='delete elements')
+    parser.add_argument('-l', '--links', required=False, default=False, action='store_true', help="remove links")
     parser.add_argument('path', help="path to be deleted", completer_method=cmd2.Cmd.path_complete)
+    parser.add_argument('dest', help="destination path (only in case a link is to be deleted)", completer_method=cmd2.Cmd.path_complete)
     @cmd2.with_argparser(parser)
     @cmd2.with_category(strELEMENT_COMMANDS)
     def do_rm(self, args):
         """deletes an element and its descendants""" 
         if self.cmd_can_be_executed():
-            # manage Paths
-            self.mp.removeFolder(args.path)
-            # manage DB
-            intId = self.msql.getIdperPath(self.mp.getToolAbsPath(args.path))
-            listSons = self.msql.getSonsPerId(intId)
-            self.deleteDescendants(listSons)
-            self.msql.deleteElementPerId(intId)
+            if (args.links):
+                sourceId = self.msql.getIdperPath(self.mp.getToolAbsPath(args.path))
+                destinationId = self.msql.getIdperPath(self.mp.getToolAbsPath(args.dest))
+                self.msql.deleteLinkPerId(sourceId, destinationId)
+            else:
+                # manage Paths
+                self.mp.removeFolder(args.path)
+                # manage DB
+                intId = self.msql.getIdperPath(self.mp.getToolAbsPath(args.path))
+                listSons = self.msql.getSonsPerId(intId)
+                self.deleteDescendants(listSons)
+                self.msql.deleteElementPerId(intId)
         return;
 
     # CMD: info #
