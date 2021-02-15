@@ -290,11 +290,16 @@ class modelcmd(cmd2.Cmd):
     
     # CMD: plot #
     parser = argparse.ArgumentParser(description='generates a plot')
-    parser.add_argument('path', help="path to be deleted", completer_method=cmd2.Cmd.path_complete)
+    parser.add_argument('-l', '--links', required=False, default=False, action='store_true', help="show links")
+    parser.add_argument('-d', '--local_directory_info', required=False, default=False, action='store_true', help="list links of the elements in this directory, showing the low level details")
+    parser.add_argument('-D', '--local_directory_info_only', required=False, default=False, action='store_true', help="list links of the elements in this directory")
+    parser.add_argument('-t', '--tree', required=False, default=False, action='store_true', help="show tree of elements")
+    parser.add_argument('path', help="path", nargs='?', default='.', completer_method=cmd2.Cmd.path_complete)
     @cmd2.with_argparser(parser)
     @cmd2.with_category(strELEMENT_COMMANDS)
     def do_plot(self, args):
         """generates a plot through plantUML"""
         if self.cmd_can_be_executed():
-            mplt.plot(self.msql, args.path)
+            intId = self.msql.getIdperPath(self.mp.getToolAbsPath(args.path))
+            mplt.plot(self, self.msql, self.mp, intId, args.links, args.local_directory_info, args.local_directory_info_only, args.tree)
         return;
