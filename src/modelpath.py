@@ -8,7 +8,7 @@ class modelpath():
     def __init__(self):
 
         # TINYMBSE_PATH = environment variable for deploying path_complete (./ if not provided)
-        self.TINYMBSE_PATH = "./.tinyMBSE"
+        self.TINYMBSE_PATH = "/tmp"
 
         if environ.get("TINYMBSE_PATH") is not None:
             self.TINYMBSE_PATH = environ.get("TINYMBSE_PATH")
@@ -23,13 +23,19 @@ class modelpath():
 
         self.TINYMBSE_PATH = os.getcwd()
 
-    def initFolders(self, name, id, modelsql):
-        self.newFolder(name)
+    def initFolders(self, name, id, type, modelsql, modeldef):
+        if (type == modeldef.listElementTypes[7]):
+            element = modelsql.getElementPerId(id)
+            referencedElement = modelsql.getElementPerId(element[8])
+            self.newReference(name, os.path.relpath(self.TINYMBSE_PATH + referencedElement[7], os.getcwd()))
+            return
+        else:
+            self.newFolder(name)
         self.cd(name)
         strCD = os.getcwd()
         for element in modelsql.getSonsPerId(id):
             self.cd(strCD)
-            self.initFolders(element[1], element[0], modelsql)
+            self.initFolders(element[1], element[0], element[5], modelsql, modeldef)
         self.cd(self.TINYMBSE_PATH)
         return
 
@@ -37,7 +43,7 @@ class modelpath():
         return os.getcwd().replace(self.TINYMBSE_PATH,'')
 
     def getToolAbsPath(self, strRelativePath):
-        return os.path.abspath(strRelativePath).replace(self.TINYMBSE_PATH,'')
+        return os.path.realpath(os.path.abspath(strRelativePath)).replace(self.TINYMBSE_PATH,'')
 
     def getRelativePath(self, strPath):
         return os.path.relpath(strPath, self.getCWD())
@@ -53,6 +59,9 @@ class modelpath():
         
     def newFolder(self, foldername):
         return os.makedirs(foldername)
+
+    def newReference(self, foldername, reference):
+        return os.symlink(reference, foldername)
 
     def removeFolder(self, foldername):
         if os.path.exists(foldername):

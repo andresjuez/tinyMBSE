@@ -83,8 +83,8 @@ class modelsql():
             self.strSelectedDB = ""
         logging.info(dbname + " deleted")
 
-    def insertElement(self, name, elementType, path, parentId):
-        self.cursor.execute("INSERT INTO " + md.strElementTableName + "(name, type, path, parentId) VALUES(" + "'{}','{}','{}','{}'".format(name, elementType, path, parentId) + ")")
+    def insertElement(self, name, elementType, path, parentId, refId):
+        self.cursor.execute("INSERT INTO " + md.strElementTableName + "(name, type, path, parentId, refId) VALUES(" + "'{}','{}','{}','{}','{}'".format(name, elementType, path, parentId, refId) + ")")
         self.db.commit()
         logging.info(name + " inserted")
 

@@ -106,7 +106,7 @@ class modelcmd(cmd2.Cmd):
                 # manage paths
                 self.mp.cd(self.mp.TINYMBSE_PATH)
                 self.mp.removeFolder(args.model[0])
-                self.mp.initFolders(args.model[0], 1, self.msql)
+                self.mp.initFolders(args.model[0], 1, md.listElementTypes[0], self.msql, md)
                 self.mp.cd(args.model[0])
                 # manage DB
                 self.msql.intCWI = 1
@@ -127,7 +127,7 @@ class modelcmd(cmd2.Cmd):
                 self.mp.cd(args.model[0])
                 # manage DB
                 self.msql.intCWI = 0
-                self.msql.insertElement(args.model[0], 'folder', self.mp.getCWD(),0)
+                self.msql.insertElement(args.model[0], 'folder', self.mp.getCWD(),0, -1)
                 self.msql.selectCWIperPath(self.mp.getCWD())
 
     # CMD: mdel #
@@ -152,18 +152,25 @@ class modelcmd(cmd2.Cmd):
     parser = argparse.ArgumentParser(description='insert element')
     parser.add_argument('type', help="type of element to be created", choices=md.listElementTypes)
     parser.add_argument('path', help="element path", completer_method=cmd2.Cmd.path_complete)
+    parser.add_argument('ref', nargs='?', help="referenced element (only in case a reference is inserted)", completer_method=cmd2.Cmd.path_complete)
     @cmd2.with_argparser(parser)
     @cmd2.with_category(strELEMENT_COMMANDS)
     def do_insert(self, args):
         """Creates insert element""" 
         if self.cmd_can_be_executed():
             # manage Paths
-            self.mp.newFolder(args.path)
+            if (args.type == md.listElementTypes[7]):
+                self.mp.newReference(args.path, args.ref)
+            else:
+                self.mp.newFolder(args.path)
             # manage DB
-            strPath = self.mp.getToolAbsPath(args.path)
+            strPath = self.mp.getToolAbsPath(args.path)            
             strName = self.mp.getNameFromPath(args.path)
             intParentId = self.msql.getIdperPath(self.mp.getToolAbsDirectory(args.path))
-            self.msql.insertElement(strName, args.type, strPath, intParentId)
+            strRefId = -1
+            if (args.type == md.listElementTypes[7]):
+                strRefId = self.msql.getIdperPath(self.mp.getToolAbsPath(args.ref))
+            self.msql.insertElement(strName, args.type, strPath, intParentId, strRefId)
             return;
 
     # CMD: ls #
@@ -183,17 +190,17 @@ class modelcmd(cmd2.Cmd):
             return;
 
     # CMD: cd #
-    @cmd2.with_argument_list
+    parser = argparse.ArgumentParser(description='changes directory')
+    parser.add_argument('path', help="path", nargs='?', default='.', completer_method=cmd2.Cmd.path_complete)
+    @cmd2.with_argparser(parser)
     @cmd2.with_category(strELEMENT_COMMANDS)
     def do_cd(self, args: List[str]):
         """Change working directory""" 
         if self.cmd_can_be_executed():
-            self.mp.cd(args[0])
+            self.mp.cd(args.path)
             self.msql.selectCWIperPath(self.mp.getCWD())
-            self.ppaged(args[0], chop=True)
+            self.ppaged(args.path, chop=True)
             return;
-
-    complete_cd = cmd2.Cmd.path_complete
 
     # CMD: ln #
     parser = argparse.ArgumentParser(description='link to elements')
