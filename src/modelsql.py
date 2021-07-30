@@ -1,6 +1,6 @@
 import logging
 import mysql.connector
-import modeldef as md
+import src.modeldef as md
 
 class modelsql():
 
@@ -84,7 +84,10 @@ class modelsql():
         logging.info(dbname + " deleted")
 
     def insertElement(self, name, elementType, path, parentId, refId):
-        self.cursor.execute("INSERT INTO " + md.strElementTableName + "(name, type, path, parentId, refId) VALUES(" + "'{}','{}','{}','{}','{}'".format(name, elementType, path, parentId, refId) + ")")
+        if (parentId == 0):
+            self.cursor.execute("INSERT INTO " + md.strElementTableName + "(name, type, path) VALUES(" + "'{}','{}','{}'".format(name, elementType, path) + ")")    
+        else:
+            self.cursor.execute("INSERT INTO " + md.strElementTableName + "(name, type, path, parentId, refId) VALUES(" + "'{}','{}','{}','{}','{}'".format(name, elementType, path, parentId, refId) + ")")
         self.db.commit()
         logging.info(name + " inserted")
 

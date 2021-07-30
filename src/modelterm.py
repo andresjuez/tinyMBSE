@@ -1,5 +1,5 @@
 from cmd2 import bg, fg, style, ansi
-import modeldef as md
+import src.modeldef as md
 from prettytable import PrettyTable
 
 def printterm(mcmd, msql, mp, intId, bLinks, bLocalDirectoryInfo, bLocalDirectoryInfoOnly, bTree):

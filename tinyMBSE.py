@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import logging
 #import unittest //maybe someday
-import modelcmd
+import src.modelcmd as mc
 
 if __name__ == '__main__':
     # set logger info
@@ -9,7 +9,7 @@ if __name__ == '__main__':
     logger.setLevel(logging.INFO)
     
     # create model commanding 
-    model = modelcmd.modelcmd()
+    model = mc.modelcmd()
 
     # start loop
     model.cmdloop()

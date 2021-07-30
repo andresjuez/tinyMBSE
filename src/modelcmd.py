@@ -2,11 +2,11 @@ import argparse
 import cmd2
 from cmd2 import bg, fg, style, ansi
 from typing import List
-import modelsql as msql
-import modelpath as mp
-import modeldef as md
-import modelplot as mplt
-import modelterm as mt
+import src.modelsql as msql
+import src.modelpath as mp
+import src.modeldef as md
+import src.modelplot as mplt
+import src.modelterm as mt
 import logging
 from prettytable import PrettyTable
 
@@ -19,7 +19,7 @@ class modelcmd(cmd2.Cmd):
     def __init__(self):
 
         # call parent
-        super().__init__(multiline_commands=['echo'], persistent_history_file='.tinyMBSE_history.dat', use_ipython=True)
+        super().__init__(multiline_commands=['echo'], persistent_history_file='.tinyMBSE_history.dat', include_ipy=True)
 
         # intro
         self.intro = style('Welcome to (tiny)MBSE! model using the command line interface', bold=True)
@@ -96,7 +96,7 @@ class modelcmd(cmd2.Cmd):
 
     # CMD: msel #
     parser = argparse.ArgumentParser(description='select model to work with', add_help=False)
-    parser.add_argument('model', nargs=1, help="model name", choices_method=get_db_list)
+    parser.add_argument('model', nargs=1, help="model name", choices_provider=get_db_list)
     @cmd2.with_argparser(parser)
     @cmd2.with_category(strMODEL_COMMANDS)
     def do_msel(self, args):
@@ -114,7 +114,7 @@ class modelcmd(cmd2.Cmd):
 
     # CMD: mnew #
     parser = argparse.ArgumentParser(description='create model', add_help=False)
-    parser.add_argument('model', nargs=1, help="name of the model to be created", choices_method=get_db_list)
+    parser.add_argument('model', nargs=1, help="name of the model to be created", choices_provider=get_db_list)
     @cmd2.with_argparser(parser)
     @cmd2.with_category(strMODEL_COMMANDS)
     def do_mnew(self, args):
@@ -127,12 +127,12 @@ class modelcmd(cmd2.Cmd):
                 self.mp.cd(args.model[0])
                 # manage DB
                 self.msql.intCWI = 0
-                self.msql.insertElement(args.model[0], 'folder', self.mp.getCWD(),0, -1)
+                self.msql.insertElement(args.model[0], 'folder', self.mp.getCWD(),0, 0)
                 self.msql.selectCWIperPath(self.mp.getCWD())
 
     # CMD: mdel #
     parser = argparse.ArgumentParser(description='delete model', add_help=False)
-    parser.add_argument('model', nargs=1, help="name of the model to be deleted", choices_method=get_db_list)
+    parser.add_argument('model', nargs=1, help="name of the model to be deleted", choices_provider=get_db_list)
     @cmd2.with_argparser(parser)
     @cmd2.with_category(strMODEL_COMMANDS)
     def do_mdel(self, args):
@@ -151,8 +151,8 @@ class modelcmd(cmd2.Cmd):
 
     parser = argparse.ArgumentParser(description='insert element')
     parser.add_argument('type', help="type of element to be created", choices=md.listElementTypes)
-    parser.add_argument('path', help="element path", completer_method=cmd2.Cmd.path_complete)
-    parser.add_argument('ref', nargs='?', help="referenced element (only in case a reference is inserted)", completer_method=cmd2.Cmd.path_complete)
+    parser.add_argument('path', help="element path", completer=cmd2.Cmd.path_complete)
+    parser.add_argument('ref', nargs='?', help="referenced element (only in case a reference is inserted)", completer=cmd2.Cmd.path_complete)
     @cmd2.with_argparser(parser)
     @cmd2.with_category(strELEMENT_COMMANDS)
     def do_insert(self, args):
@@ -167,7 +167,7 @@ class modelcmd(cmd2.Cmd):
             strPath = self.mp.getToolAbsPath(args.path)            
             strName = self.mp.getNameFromPath(args.path)
             intParentId = self.msql.getIdperPath(self.mp.getToolAbsDirectory(args.path))
-            strRefId = -1
+            strRefId = 1
             if (args.type == md.listElementTypes[7]):
                 strRefId = self.msql.getIdperPath(self.mp.getToolAbsPath(args.ref))
             self.msql.insertElement(strName, args.type, strPath, intParentId, strRefId)
@@ -179,7 +179,7 @@ class modelcmd(cmd2.Cmd):
     parser.add_argument('-d', '--local_directory_info', required=False, default=False, action='store_true', help="list links of the elements in this directory, showing the low level details")
     parser.add_argument('-D', '--local_directory_info_only', required=False, default=False, action='store_true', help="list links of the elements in this directory")
     parser.add_argument('-t', '--tree', required=False, default=False, action='store_true', help="show tree of elements")
-    parser.add_argument('path', help="path", nargs='?', default='.', completer_method=cmd2.Cmd.path_complete)
+    parser.add_argument('path', help="path", nargs='?', default='.', completer=cmd2.Cmd.path_complete)
     @cmd2.with_argparser(parser)
     @cmd2.with_category(strELEMENT_COMMANDS)
     def do_ls(self, args):
@@ -191,7 +191,7 @@ class modelcmd(cmd2.Cmd):
 
     # CMD: cd #
     parser = argparse.ArgumentParser(description='changes directory')
-    parser.add_argument('path', help="path", nargs='?', default='.', completer_method=cmd2.Cmd.path_complete)
+    parser.add_argument('path', help="path", nargs='?', default='.', completer=cmd2.Cmd.path_complete)
     @cmd2.with_argparser(parser)
     @cmd2.with_category(strELEMENT_COMMANDS)
     def do_cd(self, args: List[str]):
@@ -204,8 +204,8 @@ class modelcmd(cmd2.Cmd):
 
     # CMD: ln #
     parser = argparse.ArgumentParser(description='link to elements')
-    parser.add_argument('origin', help="origin", completer_method=cmd2.Cmd.path_complete)
-    parser.add_argument('destination', help="destination", completer_method=cmd2.Cmd.path_complete)
+    parser.add_argument('origin', help="origin", completer=cmd2.Cmd.path_complete)
+    parser.add_argument('destination', help="destination", completer=cmd2.Cmd.path_complete)
     parser.add_argument('-t', '--type', help="type of element to be created", choices=md.listLinkTypes)
     parser.add_argument('-n', '--name', help="name of the link")
     @cmd2.with_argparser(parser)
@@ -227,8 +227,8 @@ class modelcmd(cmd2.Cmd):
             self.updatePath(listSonsOfSons, oldPath, newPath)
         return;  
     parser = argparse.ArgumentParser(description='mv elements')
-    parser.add_argument('source', help="source element", completer_method=cmd2.Cmd.path_complete)
-    parser.add_argument('destination', help="destination folder", completer_method=cmd2.Cmd.path_complete)
+    parser.add_argument('source', help="source element", completer=cmd2.Cmd.path_complete)
+    parser.add_argument('destination', help="destination folder", completer=cmd2.Cmd.path_complete)
     @cmd2.with_argparser(parser)
     @cmd2.with_category(strELEMENT_COMMANDS)
     def do_mv(self, args):
@@ -255,8 +255,8 @@ class modelcmd(cmd2.Cmd):
         return;
     parser = argparse.ArgumentParser(description='delete elements')
     parser.add_argument('-l', '--links', required=False, default=False, action='store_true', help="remove links")
-    parser.add_argument('path', help="path to be deleted", completer_method=cmd2.Cmd.path_complete)
-    parser.add_argument('dest', help="destination path (only in case a link is to be deleted)", completer_method=cmd2.Cmd.path_complete)
+    parser.add_argument('path', help="path to be deleted", completer=cmd2.Cmd.path_complete)
+    parser.add_argument('dest', help="destination path (only in case a link is to be deleted)", completer=cmd2.Cmd.path_complete)
     @cmd2.with_argparser(parser)
     @cmd2.with_category(strELEMENT_COMMANDS)
     def do_rm(self, args):
@@ -278,7 +278,7 @@ class modelcmd(cmd2.Cmd):
 
     # CMD: info #
     parser = argparse.ArgumentParser(description='provides the information of a given element')
-    parser.add_argument('path', help="path", nargs='?', default='.', completer_method=cmd2.Cmd.path_complete)
+    parser.add_argument('path', help="path", nargs='?', default='.', completer=cmd2.Cmd.path_complete)
     @cmd2.with_argparser(parser)
     @cmd2.with_category(strELEMENT_COMMANDS)
     def do_info(self, args):
@@ -301,7 +301,7 @@ class modelcmd(cmd2.Cmd):
     parser.add_argument('-d', '--local_directory_info', required=False, default=False, action='store_true', help="list links of the elements in this directory, showing the low level details")
     parser.add_argument('-D', '--local_directory_info_only', required=False, default=False, action='store_true', help="list links of the elements in this directory")
     parser.add_argument('-t', '--tree', required=False, default=False, action='store_true', help="show tree of elements")
-    parser.add_argument('path', help="path", nargs='?', default='.', completer_method=cmd2.Cmd.path_complete)
+    parser.add_argument('path', help="path", nargs='?', default='.', completer=cmd2.Cmd.path_complete)
     @cmd2.with_argparser(parser)
     @cmd2.with_category(strELEMENT_COMMANDS)
     def do_plot(self, args):
