@@ -2,11 +2,11 @@ import argparse
 import cmd2
 from cmd2 import bg, fg, style, ansi
 from typing import List
-import src.modelsql as msql
-import src.modelpath as mp
-import src.modeldef as md
-import src.modelplot as mplt
-import src.modelterm as mt
+import src.sql as msql
+import src.path as mp
+import src.definitions as md
+import src.plot as mplt
+import src.term as mt
 import logging
 from prettytable import PrettyTable
 

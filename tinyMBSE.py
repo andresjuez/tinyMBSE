@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import logging
 #import unittest //maybe someday
-import src.modelcmd as mc
+import src.cmd as mc
 
 if __name__ == '__main__':
     # set logger info

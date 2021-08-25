@@ -1,4 +1,4 @@
-import src.modeldef as md
+import src.definitions as md
 import codecs
 import subprocess
 import os

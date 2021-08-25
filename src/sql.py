@@ -1,6 +1,6 @@
 import logging
 import mysql.connector
-import src.modeldef as md
+import src.definitions as md
 
 class modelsql():
 
