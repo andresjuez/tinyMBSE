@@ -7,6 +7,7 @@ import src.path as mp
 import src.definitions as md
 import src.plot as mplt
 import src.term as mt
+import src.definitions as md
 import logging
 from prettytable import PrettyTable
 
@@ -23,6 +24,9 @@ class modelcmd(cmd2.Cmd):
 
         # intro
         self.intro = style('Welcome to (tiny)MBSE! model using the command line interface', bold=True)
+
+        # load configuration
+        self.config = md.config()
 
         # model sql management
         self.msql = msql.modelsql()
@@ -41,8 +45,8 @@ class modelcmd(cmd2.Cmd):
         if (self.msql.bConnected == False):
             self.prompt = ansi.style(f'Disconnected/> ', fg='bright_red')
             return
-        self.prompt = ansi.style("[" + self.msql.strUser + "@" + self.msql.strHost + " " + \
-                                 str(self.msql.intCWI) + "] " + self.mp.getCWD() + "/> ")
+        self.prompt = ansi.style("[" + self.msql.strUser + "@" + self.msql.strHost + "][" + \
+                                 str(self.msql.intCWI) + "] " + self.mp.getCWD() + "> ")
 
     def postcmd(self, stop: bool, line: str) -> bool:
         """Hook method executed just after a command dispatch is finished.
@@ -78,14 +82,11 @@ class modelcmd(cmd2.Cmd):
 
     # CMD: conect #
     parser = argparse.ArgumentParser(description='connect to DB', add_help=False)
-    parser.add_argument('-h', '--host', required=True, help="host to connect to database")
-    parser.add_argument('-u','--user', required=True, help="username to connect to database")
-    parser.add_argument('-p','--password', required=True, help="password for username")
     @cmd2.with_argparser(parser)
     @cmd2.with_category(strMODEL_COMMANDS)
     def do_connect(self, args):
         """Connects to mysql server""" 
-        self.msql.connect(args.host, args.user, args.password)
+        self.msql.connect(self.config.config["db"]["host"], self.config.config["db"]["user"], self.config.config["db"]["pwd"])
 
     # CMD: mls #
     @cmd2.with_category(strMODEL_COMMANDS)

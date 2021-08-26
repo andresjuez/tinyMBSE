@@ -1,3 +1,5 @@
+import yaml
+
 # Model definition lists
 
 ### elements ###
@@ -52,4 +54,14 @@ strConveyedTableName = "conveyed"
 listConveyedFieldSQL = ['INT, FOREIGN KEY ' + strLinkTableName+ '(id)',
                         'INT, FOREIGN KEY ' + strElementTableName + '(id)']
 
+class config():
 
+    def __init__(self):
+
+        # load configuration 
+        with open("config.yml", 'r') as stream:
+            try:
+                self.config = yaml.safe_load(stream)
+            except yaml.YAMLError as exc:
+                print(exc)
+        

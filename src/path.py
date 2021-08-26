@@ -1,17 +1,14 @@
 import os
-from os import environ
 import shutil
+import src.definitions as md
 
 class modelpath():
     """ This class keeps the model state """
 
     def __init__(self):
 
-        # TINYMBSE_PATH = environment variable for deploying path_complete (./ if not provided)
-        self.TINYMBSE_PATH = "/tmp"
-
-        if environ.get("TINYMBSE_PATH") is not None:
-            self.TINYMBSE_PATH = environ.get("TINYMBSE_PATH")
+        # TINYMBSE_PATH = get from configuration file
+        self.TINYMBSE_PATH = md.config().config["general"]["pathtmp"]
 
         # clean previous
         self.removeFolder(self.TINYMBSE_PATH)
