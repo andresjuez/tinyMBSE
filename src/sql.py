@@ -85,14 +85,14 @@ class modelsql():
 
     def insertElement(self, name, elementType, path, parentId, refId):
         if (parentId == 0):
-            self.cursor.execute("INSERT INTO " + md.strElementTableName + "(name, type, path) VALUES(" + "'{}','{}','{}'".format(name, elementType, path) + ")")    
+            self.cursor.execute("INSERT INTO " + md.strElementTableName + "(name, type, path) VALUES(" + "'{}','{}',{}".format(name, elementType, repr(path)) + ")")    
         else:
-            self.cursor.execute("INSERT INTO " + md.strElementTableName + "(name, type, path, parentId, refId) VALUES(" + "'{}','{}','{}','{}','{}'".format(name, elementType, path, parentId, refId) + ")")
+            self.cursor.execute("INSERT INTO " + md.strElementTableName + "(name, type, path, parentId, refId) VALUES(" + "'{}','{}',{},'{}','{}'".format(name, elementType, repr(path), parentId, refId) + ")")
         self.db.commit()
         logging.info(name + " inserted")
 
     def getIdperPath(self, path):
-        self.cursor.execute("SELECT id FROM " + md.strElementTableName + " WHERE path = '{}'".format(path))
+        self.cursor.execute("SELECT id FROM " + md.strElementTableName + " WHERE path = {}".format(repr(path)))
         return self._fetchall(0)[0]
 
     def getElementPerId(self, id):
@@ -117,7 +117,7 @@ class modelsql():
         self.db.commit()
     
     def updatePathPerId(self, intId, newPath):
-        self.cursor.execute("UPDATE " + md.strElementTableName + " SET path = '{}' WHERE id = '{}'".format(str(newPath), str(intId)))
+        self.cursor.execute("UPDATE " + md.strElementTableName + " SET path = {} WHERE id = '{}'".format(repr(str(newPath)), str(intId)))
         self.db.commit()
 
     def updateParentIdPerId(self, intId, newParentId):
@@ -128,7 +128,7 @@ class modelsql():
         sourceId = self.getIdperPath(path_origin)
         destinationId = self.getIdperPath(path_destination)
         dictTypesSymbols = dict(zip(md.listLinkTypes, md.listLinkTypesSymbols))
-        self.cursor.execute("INSERT INTO " + md.strLinkTableName + "(source, destination, type, name) VALUES(" + "{},{},'{}','{}'".format(sourceId, destinationId, str(type), str(name)) + ")")
+        self.cursor.execute("INSERT INTO " + md.strLinkTableName + "(source, destination, type, name) VALUES(" + "{},{},'{}','{}'".format(repr(sourceId), repr(destinationId), str(type), str(name)) + ")")
         self.db.commit()
         logging.info(type + "link inserted: " + path_origin + " " + dictTypesSymbols[type] + " " + path_destination)
 
