@@ -1,9 +1,9 @@
 import src.definitions as md
+import webbrowser
 import codecs
-import subprocess
 import os
 
-def plot(mcmd, msql, mp, intId, bLinks, bLocalDirectoryInfo, bLocalDirectoryInfoOnly, bTree):
+def plot(msql, mp, intId, bTree, config):
     dictTypesPlots = dict(zip(md.listElementTypes, md.listElementTypesPlot))
     element = msql.getElementPerId(intId)
     listSons = msql.getSonsPerId(intId)
@@ -20,39 +20,18 @@ def plot(mcmd, msql, mp, intId, bLinks, bLocalDirectoryInfo, bLocalDirectoryInfo
     fd.write("skinparam ActorBorderColor black\n")
     fd.write("skinparam defaultTextAlignment center\n")    
     
-    #########
-    # links #
-    #########
-    if (bLinks):
-        #getDescendants
-        listDescendants = []
-        msql.getDescendantsPerId(intId, listDescendants)
-
-        #getLinks among descendants
-        listLinks = []                
-        for element in listDescendants:
-            links = msql.getLinksPerId(element[0]) #element[0] is the id
-            for link in links:
-                if link not in listLinks:
-                    listLinks.append(link)
-
-
-    ############
-    # elements #
-    ############
-    else:
-        if (bTree == False):
-            for son in listSons:
-                fd.write(dictTypesPlots[son[5]] + " " + son[1] + " as " + str(son[0]) + "\n")        
-        if (bTree == True):
-            plotTreeLeaf (fd, msql, element, dictTypesPlots)
+    if (bTree == False):
+        for son in listSons:
+            fd.write(dictTypesPlots[son[5]] + " " + son[1] + " as " + str(son[0]) + "\n")        
+    if (bTree == True):
+        plotTreeLeaf (fd, msql, element, dictTypesPlots)
 
     fd.write("@enduml\n")
     fd.close()
 
     # run plant uml and display
-    os.system("java -jar " + os.path.relpath("/drives/C/Users/aajm/Desktop/PlantUML/plantuml.jar", os.getcwd()) + " " + filename + ".puml")
-    subprocess.run(["display","./" + filename + ".png" ])
+    os.system("java -jar " + os.path.relpath(config["plantUML"]["path"], os.getcwd()) + " " + filename + ".puml")
+    webbrowser.open(filename + ".png")
     
     return;
 

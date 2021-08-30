@@ -298,12 +298,8 @@ class modelcmd(cmd2.Cmd):
             print(t)
         return;
 
-    
     # CMD: plot #
     parser = argparse.ArgumentParser(description='generates a plot')
-    parser.add_argument('-l', '--links', required=False, default=False, action='store_true', help="show links")
-    parser.add_argument('-d', '--local_directory_info', required=False, default=False, action='store_true', help="list links of the elements in this directory, showing the low level details")
-    parser.add_argument('-D', '--local_directory_info_only', required=False, default=False, action='store_true', help="list links of the elements in this directory")
     parser.add_argument('-t', '--tree', required=False, default=False, action='store_true', help="show tree of elements")
     parser.add_argument('path', help="path", nargs='?', default='.', completer=cmd2.Cmd.path_complete)
     @cmd2.with_argparser(parser)
@@ -312,5 +308,5 @@ class modelcmd(cmd2.Cmd):
         """generates a plot through plantUML"""
         if self.cmd_can_be_executed():
             intId = self.msql.getIdperPath(self.mp.getToolAbsPath(args.path))
-            mplt.plot(self, self.msql, self.mp, intId, args.links, args.local_directory_info, args.local_directory_info_only, args.tree)
+            mplt.plot(self.msql, self.mp, intId, args.tree, self.config.config)
         return;
