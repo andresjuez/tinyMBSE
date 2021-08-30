@@ -20,6 +20,8 @@ class modelpath():
 
         self.TINYMBSE_PATH = os.getcwd()
 
+        self.previousWD = os.getcwd()
+
     def initFolders(self, name, id, type, modelsql, modeldef):
         if (type == modeldef.listElementTypes[7]):
             element = modelsql.getElementPerId(id)
@@ -51,8 +53,18 @@ class modelpath():
     def getNameFromPath(self, strPath):
         return os.path.basename(strPath)
 
-    def cd(self, foldername): 
-        return os.chdir(foldername)
+    def cd(self, foldername):
+        if (foldername == '-'):
+            tempFolder = self.previousWD
+            self.previousWD = os.getcwd()
+            return os.chdir(tempFolder)
+        else:
+            self.previousWD = os.getcwd()
+            return os.chdir(foldername)
+
+    def cdHOME(self, rootElementPath):
+        homepath = os.path.join(self.TINYMBSE_PATH, os.path.basename(rootElementPath))
+        self.cd(homepath)
         
     def newFolder(self, foldername):
         return os.makedirs(foldername)

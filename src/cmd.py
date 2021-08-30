@@ -192,15 +192,18 @@ class modelcmd(cmd2.Cmd):
 
     # CMD: cd #
     parser = argparse.ArgumentParser(description='changes directory')
-    parser.add_argument('path', help="path", nargs='?', default='.', completer=cmd2.Cmd.path_complete)
+    parser.add_argument('path', help="path", nargs='?', completer=cmd2.Cmd.path_complete)
     @cmd2.with_argparser(parser)
     @cmd2.with_category(strELEMENT_COMMANDS)
     def do_cd(self, args: List[str]):
         """Change working directory""" 
         if self.cmd_can_be_executed():
-            self.mp.cd(args.path)
+            if (args.path is None):
+                rootElement = self.msql.getElementPerId(1) # get first element              
+                self.mp.cdHOME(rootElement[7])
+            else:
+                self.mp.cd(args.path)                
             self.msql.selectCWIperPath(self.mp.getCWD())
-            self.ppaged(args.path, chop=True)
             return;
 
     # CMD: ln #
