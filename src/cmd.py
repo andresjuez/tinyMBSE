@@ -37,6 +37,9 @@ class modelcmd(cmd2.Cmd):
         # Allow access to your application in py and ipy via self
         self.self_in_py = True
 
+        # connnect to the databse
+        self.msql.connect(self.config.config["db"]["host"], self.config.config["db"]["user"], self.config.config["db"]["pwd"])
+
         # set prompt
         self._set_prompt()
        
@@ -49,13 +52,7 @@ class modelcmd(cmd2.Cmd):
                                  str(self.msql.intCWI) + "] " + self.mp.getCWD() + "> ")
 
     def postcmd(self, stop: bool, line: str) -> bool:
-        """Hook method executed just after a command dispatch is finished.
-
-        :param stop: if True, the command has indicated the application should exit
-        :param line: the command line text for this command
-        :return: if this is True, the application will exit after this command and the postloop() will run
-        """
-        """Override this so prompt always displays cwd."""
+        """Hook method executed just after a command dispatch is finished."""
         self._set_prompt()
         return stop
 
@@ -63,12 +60,6 @@ class modelcmd(cmd2.Cmd):
     def get_db_list(self) -> List[str]:
         """list of available db options"""
         return self.msql.listDB()
-
-    def mcmd_can_be_executed(self):
-        if self.msql.bConnected:
-            return True
-        logging.info("Please connect first")
-        return False
 
     def cmd_can_be_executed(self):
         if self.msql.bConnected:
@@ -80,20 +71,11 @@ class modelcmd(cmd2.Cmd):
             logging.info("Please connect first")
         return False
 
-    # CMD: conect #
-    parser = argparse.ArgumentParser(description='connect to DB', add_help=False)
-    @cmd2.with_argparser(parser)
-    @cmd2.with_category(strMODEL_COMMANDS)
-    def do_connect(self, args):
-        """Connects to mysql server""" 
-        self.msql.connect(self.config.config["db"]["host"], self.config.config["db"]["user"], self.config.config["db"]["pwd"])
-
     # CMD: mls #
     @cmd2.with_category(strMODEL_COMMANDS)
     def do_mls(self, args):
         """List of models""" 
-        if self.mcmd_can_be_executed():            
-            self.ppaged("\n".join(self.get_db_list()), chop=True)
+        self.ppaged("\n".join(self.get_db_list()), chop=True)
 
     # CMD: msel #
     parser = argparse.ArgumentParser(description='select model to work with', add_help=False)
@@ -101,17 +83,15 @@ class modelcmd(cmd2.Cmd):
     @cmd2.with_argparser(parser)
     @cmd2.with_category(strMODEL_COMMANDS)
     def do_msel(self, args):
-        if self.mcmd_can_be_executed():
-            bSelected = self.msql.useDB(args.model[0])
-            if (bSelected):
-                # manage paths
-                self.mp.cd(self.mp.TINYMBSE_PATH)
-                self.mp.removeFolder(args.model[0])
-                self.mp.initFolders(args.model[0], 1, md.listElementTypes[0], self.msql, md)
-                self.mp.cd(args.model[0])
-                # manage DB
-                self.msql.intCWI = 1
-        return
+        bSelected = self.msql.useDB(args.model[0])
+        if (bSelected):
+            # manage paths
+            self.mp.cd(self.mp.TINYMBSE_PATH)
+            self.mp.removeFolder(args.model[0])
+            self.mp.initFolders(args.model[0], 1, md.listElementTypes[0], self.msql, md)
+            self.mp.cd(args.model[0])
+            # manage DB
+            self.msql.intCWI = 1
 
     # CMD: mnew #
     parser = argparse.ArgumentParser(description='create model', add_help=False)
@@ -119,17 +99,16 @@ class modelcmd(cmd2.Cmd):
     @cmd2.with_argparser(parser)
     @cmd2.with_category(strMODEL_COMMANDS)
     def do_mnew(self, args):
-        if self.mcmd_can_be_executed():
-            bCreated = self.msql.createDB(args.model[0])
-            if (bCreated):
-                # manage paths
-                self.mp.cd(self.mp.TINYMBSE_PATH)
-                self.mp.newFolder(args.model[0])
-                self.mp.cd(args.model[0])
-                # manage DB
-                self.msql.intCWI = 0
-                self.msql.insertElement(args.model[0], 'folder', self.mp.getCWD(),0, 0)
-                self.msql.selectCWIperPath(self.mp.getCWD())
+        bCreated = self.msql.createDB(args.model[0])
+        if (bCreated):
+            # manage paths
+            self.mp.cd(self.mp.TINYMBSE_PATH)
+            self.mp.newFolder(args.model[0])
+            self.mp.cd(args.model[0])
+            # manage DB
+            self.msql.intCWI = 0
+            self.msql.insertElement(args.model[0], 'folder', self.mp.getCWD(),0, 0)
+            self.msql.selectCWIperPath(self.mp.getCWD())
 
     # CMD: mdel #
     parser = argparse.ArgumentParser(description='delete model', add_help=False)
@@ -137,13 +116,12 @@ class modelcmd(cmd2.Cmd):
     @cmd2.with_argparser(parser)
     @cmd2.with_category(strMODEL_COMMANDS)
     def do_mdel(self, args):
-        if self.mcmd_can_be_executed():
-            # manage Paths
-            self.mp.removeFolder(self.mp.TINYMBSE_PATH + "/" + args.model[0])
-            if (args.model[0] == self.msql.strSelectedDB):
-                self.mp.cd(self.mp.TINYMBSE_PATH)
-            # manage DB
-            self.msql.dropDB(args.model[0])
+        # manage Paths
+        self.mp.removeFolder(self.mp.TINYMBSE_PATH + "/" + args.model[0])
+        if (args.model[0] == self.msql.strSelectedDB):
+            self.mp.cd(self.mp.TINYMBSE_PATH)
+        # manage DB
+        self.msql.dropDB(args.model[0])
         
     # CMD: insert #
     def insert_options(self) -> List[str]:
@@ -175,11 +153,7 @@ class modelcmd(cmd2.Cmd):
             return;
 
     # CMD: ls #
-    parser = argparse.ArgumentParser(description='list elements and links')
-    parser.add_argument('-l', '--links', required=False, default=False, action='store_true', help="show links")
-    parser.add_argument('-d', '--local_directory_info', required=False, default=False, action='store_true', help="list links of the elements in this directory, showing the low level details")
-    parser.add_argument('-D', '--local_directory_info_only', required=False, default=False, action='store_true', help="list links of the elements in this directory")
-    parser.add_argument('-t', '--tree', required=False, default=False, action='store_true', help="show tree of elements")
+    parser = argparse.ArgumentParser(description='list elements')
     parser.add_argument('path', help="path", nargs='?', default='.', completer=cmd2.Cmd.path_complete)
     @cmd2.with_argparser(parser)
     @cmd2.with_category(strELEMENT_COMMANDS)
@@ -187,7 +161,33 @@ class modelcmd(cmd2.Cmd):
         """list elements""" 
         if self.cmd_can_be_executed():
             intId = self.msql.getIdperPath(self.mp.getToolAbsPath(args.path))
-            mt.printterm (self, self.msql, self.mp, intId, args.links, args.local_directory_info, args.local_directory_info_only, args.tree)
+            mt.printelements(self.msql, intId)
+            return;
+
+    # CMD: tree #
+    parser = argparse.ArgumentParser(description='list elements in tree form')
+    parser.add_argument('path', help="path", nargs='?', default='.', completer=cmd2.Cmd.path_complete)
+    @cmd2.with_argparser(parser)
+    @cmd2.with_category(strELEMENT_COMMANDS)
+    def do_tree(self, args):
+        """list elements""" 
+        if self.cmd_can_be_executed():
+            intId = self.msql.getIdperPath(self.mp.getToolAbsPath(args.path))
+            mt.printtree(self.msql, intId)
+            return;
+
+    # CMD: ll #
+    parser = argparse.ArgumentParser(description='list elements links')  
+    parser.add_argument('-d', '--local_directory_info', required=False, default=False, action='store_true', help="list links of the elements in this directory, showing the low level details")
+    parser.add_argument('-D', '--local_directory_info_only', required=False, default=False, action='store_true', help="list links of the elements in this directory")
+    parser.add_argument('path', help="path", nargs='?', default='.', completer=cmd2.Cmd.path_complete)
+    @cmd2.with_argparser(parser)
+    @cmd2.with_category(strELEMENT_COMMANDS)
+    def do_ll(self, args):
+        """list elements""" 
+        if self.cmd_can_be_executed():
+            intId = self.msql.getIdperPath(self.mp.getToolAbsPath(args.path))
+            mt.printlinks (self.msql, self.mp, intId, args.local_directory_info, args.local_directory_info_only)
             return;
 
     # CMD: cd #
@@ -260,7 +260,7 @@ class modelcmd(cmd2.Cmd):
     parser = argparse.ArgumentParser(description='delete elements')
     parser.add_argument('-l', '--links', required=False, default=False, action='store_true', help="remove links")
     parser.add_argument('path', help="path to be deleted", completer=cmd2.Cmd.path_complete)
-    parser.add_argument('dest', help="destination path (only in case a link is to be deleted)", completer=cmd2.Cmd.path_complete)
+    parser.add_argument('dest', help="destination path (only in case a link is to be deleted)", nargs='?', completer=cmd2.Cmd.path_complete)
     @cmd2.with_argparser(parser)
     @cmd2.with_category(strELEMENT_COMMANDS)
     def do_rm(self, args):
