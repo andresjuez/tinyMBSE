@@ -8,6 +8,7 @@ import src.definitions as md
 import src.plot as mplt
 import src.term as mt
 import src.definitions as md
+import src.links as ml
 import logging
 from prettytable import PrettyTable
 
@@ -38,11 +39,12 @@ class modelcmd(cmd2.Cmd):
         self.self_in_py = True
 
         # connnect to the databse
+        logging.info("Connecting to the SQL server")
         self.msql.connect(self.config.config["db"]["host"], self.config.config["db"]["user"], self.config.config["db"]["pwd"])
 
         # set prompt
         self._set_prompt()
-       
+
     def _set_prompt(self):
         """Set prompt so it displays the current working directory."""
         if (self.msql.bConnected == False):
@@ -56,7 +58,7 @@ class modelcmd(cmd2.Cmd):
         self._set_prompt()
         return stop
 
-    # ANCILLIARY get model list 
+    # ANCILLIARY get model list
     def get_db_list(self) -> List[str]:
         """list of available db options"""
         return self.msql.listDB()
@@ -71,10 +73,14 @@ class modelcmd(cmd2.Cmd):
             logging.info("Please connect first")
         return False
 
+    #                #
+    # MODEL COMMANDS #
+    #                #
+
     # CMD: mls #
     @cmd2.with_category(strMODEL_COMMANDS)
     def do_mls(self, args):
-        """List of models""" 
+        """List of models"""
         self.ppaged("\n".join(self.get_db_list()), chop=True)
 
     # CMD: msel #
@@ -122,7 +128,27 @@ class modelcmd(cmd2.Cmd):
             self.mp.cd(self.mp.TINYMBSE_PATH)
         # manage DB
         self.msql.dropDB(args.model[0])
-        
+
+    #                   #
+    # ELEMENTS COMMANDS #
+    #                   #
+
+    # CMD: cd #
+    parser = argparse.ArgumentParser(description='changes directory')
+    parser.add_argument('path', help="path", nargs='?', completer=cmd2.Cmd.path_complete)
+    @cmd2.with_argparser(parser)
+    @cmd2.with_category(strELEMENT_COMMANDS)
+    def do_cd(self, args: List[str]):
+        """Change working directory"""
+        if self.cmd_can_be_executed():
+            if (args.path is None):
+                rootElement = self.msql.getElementPerId(1) # get first element
+                self.mp.cdHOME(rootElement[7])
+            else:
+                self.mp.cd(args.path)
+            self.msql.selectCWIperPath(self.mp.getCWD())
+            return;
+
     # CMD: insert #
     def insert_options(self) -> List[str]:
         """insert options"""
@@ -135,7 +161,7 @@ class modelcmd(cmd2.Cmd):
     @cmd2.with_argparser(parser)
     @cmd2.with_category(strELEMENT_COMMANDS)
     def do_insert(self, args):
-        """Creates insert element""" 
+        """Creates insert element"""
         if self.cmd_can_be_executed():
             # manage Paths
             if (args.type == md.listElementTypes[7]):
@@ -143,7 +169,7 @@ class modelcmd(cmd2.Cmd):
             else:
                 self.mp.newFolder(args.path)
             # manage DB
-            strPath = self.mp.getToolAbsPath(args.path)            
+            strPath = self.mp.getToolAbsPath(args.path)
             strName = self.mp.getNameFromPath(args.path)
             intParentId = self.msql.getIdperPath(self.mp.getToolAbsDirectory(args.path))
             strRefId = 1
@@ -158,10 +184,11 @@ class modelcmd(cmd2.Cmd):
     @cmd2.with_argparser(parser)
     @cmd2.with_category(strELEMENT_COMMANDS)
     def do_ls(self, args):
-        """list elements""" 
+        """list elements"""
         if self.cmd_can_be_executed():
             intId = self.msql.getIdperPath(self.mp.getToolAbsPath(args.path))
-            mt.printelements(self.msql, intId)
+            listElements = self.msql.getSonsPerId(intId)
+            mt.printelements(self.msql, listElements)
             return;
 
     # CMD: tree #
@@ -170,57 +197,10 @@ class modelcmd(cmd2.Cmd):
     @cmd2.with_argparser(parser)
     @cmd2.with_category(strELEMENT_COMMANDS)
     def do_tree(self, args):
-        """list elements""" 
+        """list elements"""
         if self.cmd_can_be_executed():
             intId = self.msql.getIdperPath(self.mp.getToolAbsPath(args.path))
             mt.printtree(self.msql, intId)
-            return;
-
-    # CMD: ll #
-    parser = argparse.ArgumentParser(description='list elements links')  
-    parser.add_argument('-d', '--local_directory_info', required=False, default=False, action='store_true', help="list links of the elements in this directory, showing the low level details")
-    parser.add_argument('-D', '--local_directory_info_only', required=False, default=False, action='store_true', help="list links of the elements in this directory")
-    parser.add_argument('path', help="path", nargs='?', default='.', completer=cmd2.Cmd.path_complete)
-    @cmd2.with_argparser(parser)
-    @cmd2.with_category(strELEMENT_COMMANDS)
-    def do_ll(self, args):
-        """list elements""" 
-        if self.cmd_can_be_executed():
-            intId = self.msql.getIdperPath(self.mp.getToolAbsPath(args.path))
-            mt.printlinks (self.msql, self.mp, intId, args.local_directory_info, args.local_directory_info_only)
-            return;
-
-    # CMD: cd #
-    parser = argparse.ArgumentParser(description='changes directory')
-    parser.add_argument('path', help="path", nargs='?', completer=cmd2.Cmd.path_complete)
-    @cmd2.with_argparser(parser)
-    @cmd2.with_category(strELEMENT_COMMANDS)
-    def do_cd(self, args: List[str]):
-        """Change working directory""" 
-        if self.cmd_can_be_executed():
-            if (args.path is None):
-                rootElement = self.msql.getElementPerId(1) # get first element              
-                self.mp.cdHOME(rootElement[7])
-            else:
-                self.mp.cd(args.path)                
-            self.msql.selectCWIperPath(self.mp.getCWD())
-            return;
-
-    # CMD: ln #
-    parser = argparse.ArgumentParser(description='link to elements')
-    parser.add_argument('origin', help="origin", completer=cmd2.Cmd.path_complete)
-    parser.add_argument('destination', help="destination", completer=cmd2.Cmd.path_complete)
-    parser.add_argument('-t', '--type', help="type of element to be created", choices=md.listLinkTypes)
-    parser.add_argument('-n', '--name', help="name of the link")
-    @cmd2.with_argparser(parser)
-    @cmd2.with_category(strELEMENT_COMMANDS)
-    def do_ln(self, args):
-        """Creates a link between two elements""" 
-        if self.cmd_can_be_executed():
-            strtype = 'dataflow'
-            if args.type:
-                strtype = args.type
-            self.msql.insertLink(self.mp.getToolAbsPath(args.origin), self.mp.getToolAbsPath(args.destination), strtype, args.name) 
             return;
 
     # CMD: mv #
@@ -229,14 +209,14 @@ class modelcmd(cmd2.Cmd):
             self.msql.updatePathPerId(element[0], element[7].replace(oldPath, newPath, 1)) #element[0] is the id
             listSonsOfSons = self.msql.getSonsPerId(element[0]) #element[0] is the id
             self.updatePath(listSonsOfSons, oldPath, newPath)
-        return;  
+        return;
     parser = argparse.ArgumentParser(description='mv elements')
     parser.add_argument('source', help="source element", completer=cmd2.Cmd.path_complete)
     parser.add_argument('destination', help="destination folder", completer=cmd2.Cmd.path_complete)
     @cmd2.with_argparser(parser)
     @cmd2.with_category(strELEMENT_COMMANDS)
     def do_mv(self, args):
-        """moves an element""" 
+        """moves an element"""
         if self.cmd_can_be_executed():
             # manage Paths
             self.mp.mv(args.source, args.destination)
@@ -258,26 +238,19 @@ class modelcmd(cmd2.Cmd):
             self.msql.deleteElementPerId(element[0]) #element[0] is the id
         return;
     parser = argparse.ArgumentParser(description='delete elements')
-    parser.add_argument('-l', '--links', required=False, default=False, action='store_true', help="remove links")
-    parser.add_argument('path', help="path to be deleted", completer=cmd2.Cmd.path_complete)
-    parser.add_argument('dest', help="destination path (only in case a link is to be deleted)", nargs='?', completer=cmd2.Cmd.path_complete)
+    parser.add_argument('path', help="path to the element to be deleted", completer=cmd2.Cmd.path_complete)
     @cmd2.with_argparser(parser)
     @cmd2.with_category(strELEMENT_COMMANDS)
     def do_rm(self, args):
-        """deletes an element and its descendants""" 
+        """deletes an element and its descendants"""
         if self.cmd_can_be_executed():
-            if (args.links):
-                sourceId = self.msql.getIdperPath(self.mp.getToolAbsPath(args.path))
-                destinationId = self.msql.getIdperPath(self.mp.getToolAbsPath(args.dest))
-                self.msql.deleteLinkPerId(sourceId, destinationId)
-            else:
-                # manage Paths
-                self.mp.removeFolder(args.path)
-                # manage DB
-                intId = self.msql.getIdperPath(self.mp.getToolAbsPath(args.path))
-                listSons = self.msql.getSonsPerId(intId)
-                self.deleteDescendants(listSons)
-                self.msql.deleteElementPerId(intId)
+            # manage Paths
+            self.mp.removeFolder(args.path)
+            # manage DB
+            intId = self.msql.getIdperPath(self.mp.getToolAbsPath(args.path))
+            listSons = self.msql.getSonsPerId(intId)
+            self.deleteDescendants(listSons)
+            self.msql.deleteElementPerId(intId)
         return;
 
     # CMD: info #
@@ -297,6 +270,60 @@ class modelcmd(cmd2.Cmd):
                 t.add_row([field, content])
             print(t)
         return;
+
+    #                #
+    # LINKS COMMANDS #
+    #                #
+
+    # CMD: ll #
+    parser = argparse.ArgumentParser(description='list elements links')
+    parser.add_argument('-d', '--local_directory_info', required=False, default=False, action='store_true', help="list links of the elements in this directory, showing the low level details")
+    parser.add_argument('-D', '--local_directory_info_only', required=False, default=False, action='store_true', help="list links of the elements in this directory")
+    parser.add_argument('path', help="path", nargs='?', default='.', completer=cmd2.Cmd.path_complete)
+    @cmd2.with_argparser(parser)
+    @cmd2.with_category(strELEMENT_COMMANDS)
+    def do_ll(self, args):
+        """list elements"""
+        if self.cmd_can_be_executed():
+            intId = self.msql.getIdperPath(self.mp.getToolAbsPath(args.path)) # get id 
+            listElements = self.msql.getSonsPerId(intId)
+            mt.printlinks(self.msql, self.mp, listElements)
+            return;
+
+    # CMD: ln #
+    parser = argparse.ArgumentParser(description='link to elements')
+    parser.add_argument('origin', help="origin", completer=cmd2.Cmd.path_complete)
+    parser.add_argument('destination', help="destination", completer=cmd2.Cmd.path_complete)
+    parser.add_argument('-t', '--type', help="type of element to be created", choices=md.listLinkTypes)
+    parser.add_argument('-n', '--name', help="name of the link")
+    @cmd2.with_argparser(parser)
+    @cmd2.with_category(strELEMENT_COMMANDS)
+    def do_ln(self, args):
+        """Creates a link between two elements"""
+        if self.cmd_can_be_executed():
+            strtype = 'dataflow'
+            if args.type:
+                strtype = args.type
+            self.msql.insertLink(self.mp.getToolAbsPath(args.origin), self.mp.getToolAbsPath(args.destination), strtype, args.name)
+            return;
+
+    # CMD: rml #
+    parser = argparse.ArgumentParser(description='delete elements')
+    parser.add_argument('path', help="path to element start element", completer=cmd2.Cmd.path_complete)
+    parser.add_argument('dest', help="path to element destination element", completer=cmd2.Cmd.path_complete)
+    @cmd2.with_argparser(parser)
+    @cmd2.with_category(strELEMENT_COMMANDS)
+    def do_rml(self, args):
+        """deletes an element and its descendants"""
+        if self.cmd_can_be_executed():
+            sourceId = self.msql.getIdperPath(self.mp.getToolAbsPath(args.path))
+            destinationId = self.msql.getIdperPath(self.mp.getToolAbsPath(args.dest))
+            self.msql.deleteLinkPerId(sourceId, destinationId)
+        return;
+
+    #                #
+    # OTHER COMMANDS #
+    #                #
 
     # CMD: plot #
     parser = argparse.ArgumentParser(description='generates a plot')

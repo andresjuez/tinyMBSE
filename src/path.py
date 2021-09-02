@@ -79,8 +79,3 @@ class modelpath():
     def mv(self, source, destination):
         if os.path.exists(source):
             return shutil.move(source, destination)
-
-
- 
-        
-        

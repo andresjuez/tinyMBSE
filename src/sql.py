@@ -132,9 +132,17 @@ class modelsql():
         self.db.commit()
         logging.info(type + "link inserted: " + path_origin + " " + dictTypesSymbols[type] + " " + path_destination)
 
-    def getLinksPerId(self, id):
+    def getAllLinksPerId(self, id):
         self.cursor.execute("SELECT " + ",".join(md.listLinkField) + " FROM " + md.strLinkTableName + "  WHERE source = '{}' OR destination = '{}'".format(str(id), str(id)))
         return self.cursor.fetchall()
+
+    def getLink(self, start_id, end_id):
+        self.cursor.execute("SELECT " + ",".join(md.listLinkField) + " FROM " + md.strLinkTableName + "  WHERE source = '{}' AND destination = '{}'".format(str(start_id), str(end_id)))
+        return self.cursor.fetchall()
+
+    def getLinkPerId(self, intId):
+        self.cursor.execute("SELECT " + ",".join(md.listLinkField) + " FROM " + md.strLinkTableName + " WHERE id = '{}'".format(str(intId)))
+        return self.cursor.fetchall()[0]
   
     def deleteElementPerId(self, intId):
         self.cursor.execute("DELETE FROM " + md.strElementTableName + " WHERE id = '{}'".format(str(intId)))
