@@ -36,20 +36,35 @@ def computeLinks(msql, listElements):
     for start_element in listElements:
         # 3. for each end_element in listOfElements (there could be the case that start_element and end_element are the same)
         for end_element in listElements:
-            
+
             # 4. Look for fundamental links
             listFundamentalLinks = msql.getLink(start_element[0], end_element[0]) #element[0] is the id
             for link in listFundamentalLinks:
                 objLink = linkInfo(link[0], "fundamental", start_element[0], end_element[0])
                 listComputedLinks.append(objLink)
 
+            # 5.1 Look for derived links (start element pointing to end element descendants)
+            for end_descendant in dictDescendants[end_element[0]]:
+                listDerivedLinks = msql.getLink(start_element[0], end_descendant[0]) #element[0] is the id
+                for link in listDerivedLinks:
+                    objLink = linkInfo(link[0], "derived", start_element[0], end_element[0])
+                    listComputedLinks.append(objLink)
+
+            # 5.2 Look for derived links (end element pointing to start element descendants)
+            for start_descendant in dictDescendants[start_element[0]]:
+                listDerivedLinks = msql.getLink(start_descendant[0], end_element[0]) #element[0] is the id
+                for link in listDerivedLinks:
+                    objLink = linkInfo(link[0], "derived", start_element[0], end_element[0])
+                    listComputedLinks.append(objLink)
+            
             # 5. Look for derived links
             for start_descendant in dictDescendants[start_element[0]]:
                 for end_descendant in dictDescendants[end_element[0]]:
                     listDerivedLinks = msql.getLink(start_descendant[0], end_descendant[0]) #element[0] is the id
                     for link in listDerivedLinks:
-                        objLink = linkInfo(link[0], "derived", start_element[0], end_element[0])
-                        listComputedLinks.append(objLink)
+                        if (start_element[0] != end_element[0]):
+                            objLink = linkInfo(link[0], "derived", start_element[0], end_element[0])
+                            listComputedLinks.append(objLink)
 
     # 6. return listLinks
     return listComputedLinks

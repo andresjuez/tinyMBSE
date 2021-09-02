@@ -21,7 +21,9 @@ def printlinks(msql, mp, listElements):
                 ansi.style(mp.getRelativePath(startElement[7]), fg=dictTypeColours[startElement[5]]),
                 dictTypesSymbols[link[5]],
                 ansi.style(mp.getRelativePath(endElement[7]), fg=dictTypeColours[endElement[5]])]) #element[7] is path, element[5] is type
-    print(t)
+    
+    if listLinks:
+        print(t)
 
 def printelements(msql, listElements):    
     dictTypeColours = dict(zip(md.listElementTypes,md.listElementTypesColours))

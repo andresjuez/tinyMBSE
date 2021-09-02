@@ -277,8 +277,8 @@ class modelcmd(cmd2.Cmd):
 
     # CMD: ll #
     parser = argparse.ArgumentParser(description='list elements links')
-    parser.add_argument('-d', '--local_directory_info', required=False, default=False, action='store_true', help="list links of the elements in this directory, showing the low level details")
-    parser.add_argument('-D', '--local_directory_info_only', required=False, default=False, action='store_true', help="list links of the elements in this directory")
+    parser.add_argument('-g', '--group', required=False, default=False, action='store_true', help="links which have the same source and destination are grouped")
+    parser.add_argument('-e', '--external', required=False, default=False, action='store_true', help="considers also those elements outside this folder to show links")
     parser.add_argument('path', help="path", nargs='?', default='.', completer=cmd2.Cmd.path_complete)
     @cmd2.with_argparser(parser)
     @cmd2.with_category(strELEMENT_COMMANDS)
