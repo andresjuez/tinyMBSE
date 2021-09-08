@@ -73,17 +73,15 @@ def computeLinks(msql, listElements):
 def groupLinks(listComputedLinks):
     listGroupedLinks = list()
 
-    if (listComputedLinks):
-        listGroupedLinks.append(listComputedLinks[0])
-        for link in listComputedLinks[1:]:
-            bFound = False
-            for index, grouppedLink in enumerate(listGroupedLinks):
-                if ((link.start_element_id == grouppedLink.start_element_id) & (link.end_element_id == grouppedLink.end_element_id)):
-                    listGroupedLinks[index].name += ", " + link.name
-                    listGroupedLinks[index].type = "derived"
-                    bFound = True
-            if bFound == False:
-                listGroupedLinks.append(link)
+    for link in listComputedLinks:
+        bFound = False
+        for index, grouppedLink in enumerate(listGroupedLinks):
+            if ((link.start_element_id == grouppedLink.start_element_id) & (link.end_element_id == grouppedLink.end_element_id)):
+                listGroupedLinks[index].name += ", " + link.name
+                listGroupedLinks[index].type = "derived"
+                bFound = True
+        if bFound == False:
+            listGroupedLinks.append(link)
 
     return listGroupedLinks
 
