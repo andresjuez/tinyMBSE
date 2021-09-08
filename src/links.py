@@ -15,8 +15,9 @@
 
 class linkInfo():
 
-     def __init__(self, link_id, link_type, start_element_id, end_element_id):
-        self.link_id = link_id
+     def __init__(self, link_id, link_name, link_type, start_element_id, end_element_id):
+        self.id = link_id
+        self.name = link_name
         self.type = link_type #fundamental or #derived
         self.start_element_id = start_element_id
         self.end_element_id = end_element_id
@@ -40,21 +41,21 @@ def computeLinks(msql, listElements):
             # 4. Look for fundamental links
             listFundamentalLinks = msql.getLink(start_element[0], end_element[0]) #element[0] is the id
             for link in listFundamentalLinks:
-                objLink = linkInfo(link[0], "fundamental", start_element[0], end_element[0])
+                objLink = linkInfo(link[0], link[1], "fundamental", start_element[0], end_element[0])
                 listComputedLinks.append(objLink)
 
             # 5.1 Look for derived links (start element pointing to end element descendants)
             for end_descendant in dictDescendants[end_element[0]]:
                 listDerivedLinks = msql.getLink(start_element[0], end_descendant[0]) #element[0] is the id
                 for link in listDerivedLinks:
-                    objLink = linkInfo(link[0], "derived", start_element[0], end_element[0])
+                    objLink = linkInfo(link[0], link[1], "derived", start_element[0], end_element[0])
                     listComputedLinks.append(objLink)
 
             # 5.2 Look for derived links (end element pointing to start element descendants)
             for start_descendant in dictDescendants[start_element[0]]:
                 listDerivedLinks = msql.getLink(start_descendant[0], end_element[0]) #element[0] is the id
                 for link in listDerivedLinks:
-                    objLink = linkInfo(link[0], "derived", start_element[0], end_element[0])
+                    objLink = linkInfo(link[0], link[1], "derived", start_element[0], end_element[0])
                     listComputedLinks.append(objLink)
             
             # 5. Look for derived links
@@ -63,8 +64,40 @@ def computeLinks(msql, listElements):
                     listDerivedLinks = msql.getLink(start_descendant[0], end_descendant[0]) #element[0] is the id
                     for link in listDerivedLinks:
                         if (start_element[0] != end_element[0]):
-                            objLink = linkInfo(link[0], "derived", start_element[0], end_element[0])
+                            objLink = linkInfo(link[0], link[1], "derived", start_element[0], end_element[0])
                             listComputedLinks.append(objLink)
 
     # 6. return listLinks
     return listComputedLinks
+
+def groupLinks(listComputedLinks):
+    listGroupedLinks = list()
+
+    if (listComputedLinks):
+        listGroupedLinks.append(listComputedLinks[0])
+        for link in listComputedLinks[1:]:
+            bFound = False
+            for index, grouppedLink in enumerate(listGroupedLinks):
+                if ((link.start_element_id == grouppedLink.start_element_id) & (link.end_element_id == grouppedLink.end_element_id)):
+                    listGroupedLinks[index].name += ", " + link.name
+                    listGroupedLinks[index].type = "derived"
+                    bFound = True
+            if bFound == False:
+                listGroupedLinks.append(link)
+
+    return listGroupedLinks
+
+def extendElements (msql, listElements):
+    listExtendedElements = list(listElements)
+
+    for element in listElements:
+        listLinks = msql.getAllLinksPerId(element[0])
+        for link in listLinks:
+            startElement = msql.getElementPerId(link[7])
+            if (startElement not in listExtendedElements):
+                listExtendedElements.append(startElement)
+            endElement = msql.getElementPerId(link[8])
+            if (endElement not in listExtendedElements):
+                listExtendedElements.append(endElement)
+
+    return listExtendedElements

@@ -1,26 +1,33 @@
 from cmd2 import bg, fg, style, ansi
 from prettytable import PrettyTable
+from prettytable.prettytable import PLAIN_COLUMNS
 import src.definitions as md
 import src.links as ml
 
-def printlinks(msql, mp, listElements):    
+def printlinks(msql, mp, listElements, bGroup, bFundamental):    
     dictTypesSymbols = dict(zip(md.listLinkTypes, md.listLinkTypesSymbols))
     dictTypeColours = dict(zip(md.listElementTypes,md.listElementTypesColours))
-    listLinks = ml.computeLinks(msql, listElements)    
+    listLinks = ml.computeLinks(msql, listElements)
+    if (bGroup):
+        listLinks = ml.groupLinks(listLinks)
       
     #print table header
     t = PrettyTable(['Name', 'Source', 'Type', 'Destination'])
     t.align = "l"
+    t.set_style(PLAIN_COLUMNS)
+    t.header = False
 
     for linkinfo in listLinks:
-        link = msql.getLinkPerId(linkinfo.link_id)
-        startElement = msql.getElementPerId(linkinfo.start_element_id)
-        endElement = msql.getElementPerId(linkinfo.end_element_id)
+        link = msql.getLinkPerId(linkinfo.id)
 
-        t.add_row([link[1],#link[1] is the name
-                ansi.style(mp.getRelativePath(startElement[7]), fg=dictTypeColours[startElement[5]]),
-                dictTypesSymbols[link[5]],
-                ansi.style(mp.getRelativePath(endElement[7]), fg=dictTypeColours[endElement[5]])]) #element[7] is path, element[5] is type
+        if ((bFundamental == True) and (linkinfo.type == "fundamental") or (bFundamental == False)):
+            startElement = msql.getElementPerId(linkinfo.start_element_id)
+            endElement = msql.getElementPerId(linkinfo.end_element_id)
+
+            t.add_row([ansi.style(mp.getRelativePath(startElement[7]), fg=dictTypeColours[startElement[5]]),
+                    dictTypesSymbols[link[5]],
+                    ansi.style(mp.getRelativePath(endElement[7]), fg=dictTypeColours[endElement[5]]), #element[7] is path, element[5] is type
+                    linkinfo.name]) #link[1] is the name
     
     if listLinks:
         print(t)

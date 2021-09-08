@@ -22,7 +22,7 @@ listElementFieldSQL = ['INT PRIMARY KEY AUTO_INCREMENT UNIQUE',
 # CMD  - Please keep it consistent with Definiton
 listElementTypesColours = ['blue', 'bright_green', 'bright_cyan', 'bright_magenta', 'magenta', 'bright_yellow', 'on_blue', 'bright_blue']
 # PlantUML
-listElementTypesPlot = ['folder', 'storage', 'node', 'component', 'rectangle', 'actor', 'usecase', 'hexagon']
+listElementTypesPlot = ['folder', 'rectangle', 'node', 'component', 'rectangle', 'actor', 'usecase', 'hexagon']
 
 
 

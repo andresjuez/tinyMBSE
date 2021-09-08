@@ -279,6 +279,7 @@ class modelcmd(cmd2.Cmd):
     parser = argparse.ArgumentParser(description='list elements links')
     parser.add_argument('-g', '--group', required=False, default=False, action='store_true', help="links which have the same source and destination are grouped")
     parser.add_argument('-e', '--external', required=False, default=False, action='store_true', help="considers also those elements outside this folder to show links")
+    parser.add_argument('-f', '--fundamental', required=False, default=False, action='store_true', help="only fundamental links are shown")
     parser.add_argument('path', help="path", nargs='?', default='.', completer=cmd2.Cmd.path_complete)
     @cmd2.with_argparser(parser)
     @cmd2.with_category(strELEMENT_COMMANDS)
@@ -287,7 +288,9 @@ class modelcmd(cmd2.Cmd):
         if self.cmd_can_be_executed():
             intId = self.msql.getIdperPath(self.mp.getToolAbsPath(args.path)) # get id 
             listElements = self.msql.getSonsPerId(intId)
-            mt.printlinks(self.msql, self.mp, listElements)
+            if (args.external):
+                listElements = ml.extendElements(self.msql, listElements)
+            mt.printlinks(self.msql, self.mp, listElements, args.group, args.fundamental)
             return;
 
     # CMD: ln #
@@ -328,12 +331,22 @@ class modelcmd(cmd2.Cmd):
     # CMD: plot #
     parser = argparse.ArgumentParser(description='generates a plot')
     parser.add_argument('-t', '--tree', required=False, default=False, action='store_true', help="show tree of elements")
+    parser.add_argument('-g', '--group', required=False, default=False, action='store_true', help="links which have the same source and destination are grouped")
+    parser.add_argument('-e', '--external', required=False, default=False, action='store_true', help="considers also those elements outside this folder to show links")
+    parser.add_argument('-f', '--fundamental', required=False, default=False, action='store_true', help="only fundamental links are shown")
     parser.add_argument('path', help="path", nargs='?', default='.', completer=cmd2.Cmd.path_complete)
     @cmd2.with_argparser(parser)
     @cmd2.with_category(strELEMENT_COMMANDS)
     def do_plot(self, args):
         """generates a plot through plantUML"""
         if self.cmd_can_be_executed():
-            intId = self.msql.getIdperPath(self.mp.getToolAbsPath(args.path))
-            mplt.plot(self.msql, self.mp, intId, args.tree, self.config.config)
+            if (args.tree):
+                intId = self.msql.getIdperPath(self.mp.getToolAbsPath(args.path))
+                mplt.plotTree(self.msql, intId, self.config.config)
+            else:
+                intId = self.msql.getIdperPath(self.mp.getToolAbsPath(args.path)) # get id 
+                listElements = self.msql.getSonsPerId(intId)
+                if (args.external):
+                    listElements = ml.extendElements(self.msql, listElements)
+                mplt.plotDFD(self.msql, listElements, self.config.config, args.group, args.fundamental)
         return;
