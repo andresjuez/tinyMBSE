@@ -91,11 +91,19 @@ def extendElements (msql, listElements):
     for element in listElements:
         listLinks = msql.getAllLinksPerId(element[0])
         for link in listLinks:
+
             startElement = msql.getElementPerId(link[7])
-            if (startElement not in listExtendedElements):
-                listExtendedElements.append(startElement)
+            listAscendantsStartElement = list()
+            msql.getAscendatsPerId(startElement[0], listAscendantsStartElement)
+            if not any(item in listAscendantsStartElement for item in listElements):
+                if (startElement not in listExtendedElements):
+                    listExtendedElements.append(startElement)
+
             endElement = msql.getElementPerId(link[8])
-            if (endElement not in listExtendedElements):
-                listExtendedElements.append(endElement)
+            listAscendantsEndElement = list()
+            msql.getAscendatsPerId(endElement[0], listAscendantsEndElement)
+            if not any(item in listAscendantsEndElement for item in listElements):            
+                if (endElement not in listExtendedElements):
+                    listExtendedElements.append(endElement)
 
     return listExtendedElements

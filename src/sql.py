@@ -26,6 +26,10 @@ class modelsql():
         logging.basicConfig(format=LOGGINGFORMAT)
         logger.setLevel(logging.INFO)
 
+    #              #
+    # DB FUNCTOINS #
+    #              #
+
     def _fetchall(self, intIndex):
         return [item[intIndex] for item in self.cursor.fetchall()] 
 
@@ -83,6 +87,10 @@ class modelsql():
             self.strSelectedDB = ""
         logging.info(dbname + " deleted")
 
+    #                   #
+    # ELEMENT FUNCTIONS #
+    #                   #
+
     def insertElement(self, name, elementType, path, parentId, refId):
         if (parentId == 0):
             self.cursor.execute("INSERT INTO " + md.strElementTableName + "(name, type, path) VALUES(" + "'{}','{}',{}".format(name, elementType, repr(path)) + ")")    
@@ -112,6 +120,13 @@ class modelsql():
         for element in listSons:
             self.getDescendantsPerId(element[0], listDescendants)
 
+    def getAscendatsPerId(self, intId, listAscendants):
+        element = self.getElementPerId(intId)
+        parentElement = self.getElementPerId(element[6]) #parentId
+        listAscendants.append(parentElement)
+        if parentElement[0] != 1:
+            self.getAscendatsPerId(parentElement[0], listAscendants)
+
     def updateNamePerId(self, intId, newName):
         self.cursor.execute("UPDATE " + md.strElementTableName + " SET name = '{}' WHERE id = '{}'".format(str(newName), str(intId)))
         self.db.commit()
@@ -123,7 +138,11 @@ class modelsql():
     def updateParentIdPerId(self, intId, newParentId):
         self.cursor.execute("UPDATE " + md.strElementTableName + " SET parentId = '{}' WHERE id = '{}'".format(str(newParentId), str(intId)))
         self.db.commit()
-        
+    
+    #                #
+    # LINKS COMMANDS #
+    #                #
+
     def insertLink(self, path_origin, path_destination, type, name):
         sourceId = self.getIdperPath(path_origin)
         destinationId = self.getIdperPath(path_destination)
