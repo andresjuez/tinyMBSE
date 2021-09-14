@@ -22,11 +22,11 @@ class modelpath():
 
         self.previousWD = os.getcwd()
 
-    def initFolders(self, name, id, type, modelsql, modeldef):
-        if (type == modeldef.listElementTypes[7]):
+    def initFolders(self, name, id, type, modelsql):
+        if (type == md.listElementTypes[md.E_TYPE_REFERENCE]):
             element = modelsql.getElementPerId(id)
-            referencedElement = modelsql.getElementPerId(element[8])
-            self.newReference(name, os.path.relpath(self.TINYMBSE_PATH + referencedElement[7], os.getcwd()))
+            referencedElement = modelsql.getElementPerId(element[md.ELEMENT_REFERENCE_ID])
+            self.newReference(name, os.path.relpath(self.TINYMBSE_PATH + referencedElement[md.ELEMENT_PATH], os.getcwd()))
             return
         else:
             self.newFolder(name)
@@ -34,7 +34,7 @@ class modelpath():
         strCD = os.getcwd()
         for element in modelsql.getSonsPerId(id):
             self.cd(strCD)
-            self.initFolders(element[1], element[0], element[5], modelsql, modeldef)
+            self.initFolders(element[md.ELEMENT_NAME], element[md.ELEMENT_ID], element[md.ELEMENT_TYPE], modelsql)
         self.cd(self.TINYMBSE_PATH)
         return
 

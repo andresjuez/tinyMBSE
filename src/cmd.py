@@ -1,10 +1,10 @@
+import sys
 import argparse
 import cmd2
 from cmd2 import bg, fg, style, ansi
 from typing import List
 import src.sql as msql
 import src.path as mp
-import src.definitions as md
 import src.plot as mplt
 import src.term as mt
 import src.definitions as md
@@ -12,6 +12,35 @@ import src.links as ml
 import logging
 from prettytable import PrettyTable
 
+def query_yes_no(question, default="yes"):
+    """Ask a yes/no question via raw_input() and return their answer.
+
+    "question" is a string that is presented to the user.
+    "default" is the presumed answer if the user just hits <Enter>.
+            It must be "yes" (the default), "no" or None (meaning
+            an answer is required of the user).
+
+    The "answer" return value is True for "yes" or False for "no".
+    """
+    valid = {"yes": True, "y": True, "ye": True, "no": False, "n": False}
+    if default is None:
+        prompt = " [y/n] "
+    elif default == "yes":
+        prompt = " [Y/n] "
+    elif default == "no":
+        prompt = " [y/N] "
+    else:
+        raise ValueError("invalid default answer: '%s'" % default)
+
+    while True:
+        sys.stdout.write(question + prompt)
+        choice = input().lower()
+        if default is not None and choice == "":
+            return valid[default]
+        elif choice in valid:
+            return valid[choice]
+        else:
+            sys.stdout.write("Please respond with 'yes' or 'no' " "(or 'y' or 'n').\n")
 class modelcmd(cmd2.Cmd):
     """ This manages the model in the SQL database """
     # command categories
@@ -94,7 +123,7 @@ class modelcmd(cmd2.Cmd):
             # manage paths
             self.mp.cd(self.mp.TINYMBSE_PATH)
             self.mp.removeFolder(args.model[0])
-            self.mp.initFolders(args.model[0], 1, md.listElementTypes[0], self.msql, md)
+            self.mp.initFolders(args.model[0], 1, md.listElementTypes[md.E_TYPE_FOLDER], self.msql)
             self.mp.cd(args.model[0])
             # manage DB
             self.msql.intCWI = 1
@@ -119,15 +148,22 @@ class modelcmd(cmd2.Cmd):
     # CMD: mdel #
     parser = argparse.ArgumentParser(description='delete model', add_help=False)
     parser.add_argument('model', nargs=1, help="name of the model to be deleted", choices_provider=get_db_list)
+    parser.add_argument('-f', '--force', required=False, default=False, action='store_true', help="force deletion without prompting question")
     @cmd2.with_argparser(parser)
     @cmd2.with_category(strMODEL_COMMANDS)
     def do_mdel(self, args):
-        # manage Paths
-        self.mp.removeFolder(self.mp.TINYMBSE_PATH + "/" + args.model[0])
-        if (args.model[0] == self.msql.strSelectedDB):
-            self.mp.cd(self.mp.TINYMBSE_PATH)
-        # manage DB
-        self.msql.dropDB(args.model[0])
+        response = True
+        if not args.force:
+            response = query_yes_no("are you sure you want to delete " + args.model[0] + "?", "no")
+        if response is True:
+            # manage Paths
+            self.mp.removeFolder(self.mp.TINYMBSE_PATH + "/" + args.model[0])
+            if (args.model[0] == self.msql.strSelectedDB):
+                self.mp.cd(self.mp.TINYMBSE_PATH)
+            # manage DB
+            self.msql.dropDB(args.model[0])
+        else:
+            logging.info("Deletion canceled")
 
     #                   #
     # ELEMENTS COMMANDS #
@@ -143,7 +179,7 @@ class modelcmd(cmd2.Cmd):
         if self.cmd_can_be_executed():
             if (args.path is None):
                 rootElement = self.msql.getElementPerId(1) # get first element
-                self.mp.cdHOME(rootElement[7])
+                self.mp.cdHOME(rootElement[md.ELEMENT_PATH])
             else:
                 self.mp.cd(args.path)
             self.msql.selectCWIperPath(self.mp.getCWD())
@@ -164,7 +200,7 @@ class modelcmd(cmd2.Cmd):
         """Creates insert element"""
         if self.cmd_can_be_executed():
             # manage Paths
-            if (args.type == md.listElementTypes[7]):
+            if (args.type == md.listElementTypes[md.E_TYPE_REFERENCE]):
                 self.mp.newReference(args.path, args.ref)
             else:
                 self.mp.newFolder(args.path)
@@ -173,7 +209,7 @@ class modelcmd(cmd2.Cmd):
             strName = self.mp.getNameFromPath(args.path)
             intParentId = self.msql.getIdperPath(self.mp.getToolAbsDirectory(args.path))
             strRefId = 1
-            if (args.type == md.listElementTypes[7]):
+            if (args.type == md.listElementTypes[md.E_TYPE_REFERENCE]):
                 strRefId = self.msql.getIdperPath(self.mp.getToolAbsPath(args.ref))
             self.msql.insertElement(strName, args.type, strPath, intParentId, strRefId)
             return;
@@ -206,8 +242,8 @@ class modelcmd(cmd2.Cmd):
     # CMD: mv #
     def updatePath(self, listSons, oldPath, newPath):
         for element in listSons:
-            self.msql.updatePathPerId(element[0], element[7].replace(oldPath, newPath, 1)) #element[0] is the id
-            listSonsOfSons = self.msql.getSonsPerId(element[0]) #element[0] is the id
+            self.msql.updatePathPerId(element[md.ELEMENT_ID], element[md.ELEMENT_PATH].replace(oldPath, newPath, 1)) 
+            listSonsOfSons = self.msql.getSonsPerId(element[md.ELEMENT_ID]) 
             self.updatePath(listSonsOfSons, oldPath, newPath)
         return;
     parser = argparse.ArgumentParser(description='mv elements')
@@ -233,9 +269,9 @@ class modelcmd(cmd2.Cmd):
     # CMD: rm #
     def deleteDescendants(self, listSons):
         for element in listSons:
-            listSonsOfSons = self.msql.getSonsPerId(element[0]) #element[0] is the id
+            listSonsOfSons = self.msql.getSonsPerId(element[md.ELEMENT_ID])
             self.deleteDescendants(listSonsOfSons)
-            self.msql.deleteElementPerId(element[0]) #element[0] is the id
+            self.msql.deleteElementPerId(element[md.ELEMENT_ID]) #element[0] is the id
         return;
     parser = argparse.ArgumentParser(description='delete elements')
     parser.add_argument('path', help="path to the element to be deleted", completer=cmd2.Cmd.path_complete)
@@ -303,11 +339,11 @@ class modelcmd(cmd2.Cmd):
     @cmd2.with_category(strELEMENT_COMMANDS)
     def do_ln(self, args):
         """Creates a link between two elements"""
-        if self.cmd_can_be_executed():
-            strtype = 'dataflow'
+        if self.cmd_can_be_executed():          
+            strType = md.listLinkTypes[md.L_TYPE_DATAFLOW]
             if args.type:
-                strtype = args.type
-            self.msql.insertLink(self.mp.getToolAbsPath(args.origin), self.mp.getToolAbsPath(args.destination), strtype, args.name)
+                strType = args.type
+            self.msql.insertLink(self.mp.getToolAbsPath(args.origin), self.mp.getToolAbsPath(args.destination), strType, args.name)
             return;
 
     # CMD: rml #

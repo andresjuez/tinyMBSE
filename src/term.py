@@ -24,10 +24,10 @@ def printlinks(msql, mp, listElements, bGroup, bFundamental):
             startElement = msql.getElementPerId(linkinfo.start_element_id)
             endElement = msql.getElementPerId(linkinfo.end_element_id)
 
-            t.add_row([ansi.style(mp.getRelativePath(startElement[7]), fg=dictTypeColours[startElement[5]]),
-                    dictTypesSymbols[link[5]],
-                    ansi.style(mp.getRelativePath(endElement[7]), fg=dictTypeColours[endElement[5]]), #element[7] is path, element[5] is type
-                    linkinfo.name]) #link[1] is the name
+            t.add_row([ansi.style(mp.getRelativePath(startElement[md.ELEMENT_PATH]), fg=dictTypeColours[startElement[md.ELEMENT_TYPE]]),
+                    dictTypesSymbols[link[md.LINK_TYPE]],
+                    ansi.style(mp.getRelativePath(endElement[md.ELEMENT_PATH]), fg=dictTypeColours[endElement[md.ELEMENT_TYPE]]), 
+                    linkinfo.name]) 
     
     if listLinks:
         print(t)
@@ -36,16 +36,16 @@ def printelements(msql, listElements):
     dictTypeColours = dict(zip(md.listElementTypes,md.listElementTypesColours))
     strLine = ""
     for element in listElements:
-        listDescendants = msql.getSonsPerId(element[0]) #element[0] is the id
+        listDescendants = msql.getSonsPerId(element[md.ELEMENT_ID]) 
         if listDescendants: #if the element has descendants, plot a (+)
-            strLine += ansi.style('(+)' + element[1], fg=dictTypeColours[element[5]]) + "\t" #element[1] is the name, element[5] is the type
+            strLine += ansi.style('(+)' + element[md.ELEMENT_NAME], fg=dictTypeColours[element[md.ELEMENT_TYPE]]) + "\t" 
         else:
-            strLine += ansi.style(element[1], fg=dictTypeColours[element[5]]) + "\t" #element[1] is the name, element[5] is the type
+            strLine += ansi.style(element[md.ELEMENT_NAME], fg=dictTypeColours[element[md.ELEMENT_TYPE]]) + "\t" 
     print(strLine)
 
 def printTreeLeaf (msql, element, strIndent, dictTypeColours):
-    listSons = msql.getSonsPerId(element[0]) #element[0] is the id
-    print(ansi.style(strIndent + '└── ' + element[1], fg=dictTypeColours[element[5]])) #element[1] is the name, element[5] is the type
+    listSons = msql.getSonsPerId(element[md.ELEMENT_ID]) 
+    print(ansi.style(strIndent + '└── ' + element[md.ELEMENT_NAME], fg=dictTypeColours[element[md.ELEMENT_TYPE]])) 
     strIndentSons = strIndent + "    "
     for elementSon in listSons:
         printTreeLeaf (msql, elementSon, strIndentSons, dictTypeColours)
