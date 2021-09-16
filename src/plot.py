@@ -58,6 +58,7 @@ def plotDFD(msql, listElements, config, bGroup, bFundamental):
         listLinks = ml.groupLinks(listLinks)
     
     fd = initPlot(filename)
+    fd.write("left to right direction\n")
     for element in listElements:
         fd.write(dictTypesPlots[element[md.ELEMENT_TYPE]] + " " + element[md.ELEMENT_NAME] + " as " + str(element[md.ELEMENT_ID]) + "\n")
     for link in listLinks:
