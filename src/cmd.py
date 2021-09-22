@@ -326,6 +326,10 @@ class modelcmd(cmd2.Cmd):
             listElements = self.msql.getSonsPerId(intId)
             if (args.external):
                 listElements = ml.extendElements(self.msql, listElements)
+            if (args.path != '.'):
+                listElements = list()
+                listElements.append(self.msql.getElementPerId(intId))
+                listElements = ml.extendElements(self.msql, listElements)
             mt.printlinks(self.msql, self.mp, listElements, args.group, args.fundamental)
             return;
 
