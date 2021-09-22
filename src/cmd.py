@@ -373,6 +373,7 @@ class modelcmd(cmd2.Cmd):
     parser.add_argument('-t', '--tree', required=False, default=False, action='store_true', help="show tree of elements")
     parser.add_argument('-g', '--group', required=False, default=False, action='store_true', help="links which have the same source and destination are grouped")
     parser.add_argument('-e', '--external', required=False, default=False, action='store_true', help="considers also those elements outside this folder to show links")
+    parser.add_argument('-r', '--recursive', required=False, default=False, action='store_true', help="plot fundamental links of the elements and their sons")
     parser.add_argument('-f', '--fundamental', required=False, default=False, action='store_true', help="only fundamental links are shown")
     parser.add_argument('path', help="path", nargs='?', default='.', completer=cmd2.Cmd.path_complete)
     @cmd2.with_argparser(parser)
@@ -380,13 +381,14 @@ class modelcmd(cmd2.Cmd):
     def do_plot(self, args):
         """generates a plot through plantUML"""
         if self.cmd_can_be_executed():
+            intId = self.msql.getIdperPath(self.mp.getToolAbsPath(args.path))
+            listElements = self.msql.getSonsPerId(intId)
+            if (args.external): 
+                listElements = ml.extendElements(self.msql, listElements)
             if (args.tree):
-                intId = self.msql.getIdperPath(self.mp.getToolAbsPath(args.path))
                 mplt.plotTree(self.msql, intId, self.config.config)
+            elif (args.recursive):
+                mplt.plotRecursiveDFD(self.msql, listElements, self.config.config)
             else:
-                intId = self.msql.getIdperPath(self.mp.getToolAbsPath(args.path)) # get id 
-                listElements = self.msql.getSonsPerId(intId)
-                if (args.external):
-                    listElements = ml.extendElements(self.msql, listElements)
                 mplt.plotDFD(self.msql, listElements, self.config.config, args.group, args.fundamental)
         return;
