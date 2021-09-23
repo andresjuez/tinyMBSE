@@ -36,7 +36,7 @@ def plotTree(msql, intId, config):
     element = msql.getElementPerId(intId)
     filename = "." + element[md.ELEMENT_NAME]
     
-    fd = initPlot(filename)
+    fd = initPlot(filename, bOrthogonal=config["plantUML"]["ortho"])
     plotTreeLeaf (fd, msql, element, dictTypesPlots)
     closePlot(fd)
     
@@ -60,7 +60,7 @@ def plotDFD(msql, listElements, config, bGroup, bFundamental):
     if (bGroup):
         listLinks = ml.groupLinks(listLinks)
     
-    fd = initPlot(filename)
+    fd = initPlot(filename, bOrthogonal=config["plantUML"]["ortho"])
     for element in listElements:
         fd.write(dictTypesPlots[element[md.ELEMENT_TYPE]] + " " + element[md.ELEMENT_NAME] + " as " + str(element[md.ELEMENT_ID]) + "\n")
     for link in listLinks:
@@ -77,7 +77,7 @@ def plotRecursiveDFD(msql, listElements, config):
     filename = ".dfd"
     listElementsPlusDescendants = list(listElements)
 
-    fd = initPlot(filename)
+    fd = initPlot(filename, bOrthogonal=config["plantUML"]["ortho"])
     for element in listElements:
         plotHierarchy(fd, msql, element, dictTypesPlots)
         listElement_descendants = list()

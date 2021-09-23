@@ -21,6 +21,7 @@ db:
 # PlantUML config
 # ---------------------------------------------------------------------
 plantUML:
- path: C:\Users\aajm\Desktop\PlantUML\plantuml.jar
+ path: C:\Users\aajm\Desktop\PlantUML\plantuml_beta.jar
+ ortho: True
 
 
