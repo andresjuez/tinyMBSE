@@ -307,6 +307,31 @@ class modelcmd(cmd2.Cmd):
             print(t)
         return;
 
+    # CMD: update #
+    parser = argparse.ArgumentParser(description='provides the information of a given element')
+    parser.add_argument('path', help="path", nargs='?', default='.', completer=cmd2.Cmd.path_complete)
+    parser.add_argument('field', help="type of element to be created", choices=md.listElementField)
+    parser.add_argument('value', help="new value")
+    @cmd2.with_argparser(parser)
+    @cmd2.with_category(strELEMENT_COMMANDS)
+    def do_update(self, args):
+        """updates a field of a given element"""
+        if self.cmd_can_be_executed():
+            intId = self.msql.getIdperPath(self.mp.getToolAbsPath(args.path))
+            element = self.msql.getElementPerId(intId)
+            if (args.field == md.listElementField[md.ELEMENT_NAME]):
+                # manage Paths
+                new_path = self.mp.getToolAbsPath(args.path).replace(element[md.ELEMENT_NAME], args.value)
+                self.mp.mv(args.path, args.value)
+                # manage DB
+                self.msql.updateNamePerId(intId, args.value)
+                self.msql.updatePathPerId(intId, self.mp.getToolAbsPath(args.path).replace(element[md.ELEMENT_PATH], new_path, 1))
+                listSons = self.msql.getSonsPerId(intId)
+                self.updatePath(listSons, element[md.ELEMENT_PATH], new_path)
+            else:
+                self.msql.updateFieldPerId(intId, args.field, args.value)
+        return;
+
     #                #
     # LINKS COMMANDS #
     #                #

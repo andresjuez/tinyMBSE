@@ -37,7 +37,7 @@ listElementFieldSQL = ['INT PRIMARY KEY AUTO_INCREMENT UNIQUE',
                        'VARCHAR(1024)',
                        'INT REFERENCES ' + strElementTableName + '(id)']
 # CMD  - Please keep it consistent with Definiton
-listElementTypesColours = ['blue', 'bright_green', 'bright_cyan', 'bright_magenta', 'magenta', 'bright_yellow', 'on_blue', 'bright_blue']
+listElementTypesColours = ['blue', 'bright_green', 'bright_cyan', 'bright_magenta', 'magenta', 'bright_yellow', 'cyan', 'bright_blue']
 # PlantUML
 listElementTypesPlot = ['folder', 'rectangle', 'node', 'component', 'rectangle', 'actor', 'usecase', 'hexagon']
 

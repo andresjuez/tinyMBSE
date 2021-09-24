@@ -45,7 +45,7 @@ def plotTree(msql, intId, config):
     return;
 
 def plotTreeLeaf (fd, msql, element, dictTypesPlots):
-    fd.write(dictTypesPlots[element[md.ELEMENT_TYPE]] + " " + element[md.ELEMENT_NAME] + " as " + str(element[md.ELEMENT_ID]) + "\n")
+    fd.write(dictTypesPlots[element[md.ELEMENT_TYPE]] + " \"" + element[md.ELEMENT_NAME] + "\" as " + str(element[md.ELEMENT_ID]) + "\n")
     listSons = msql.getSonsPerId(element[md.ELEMENT_ID]) 
     for son in listSons:
         plotTreeLeaf (fd, msql, son, dictTypesPlots)
@@ -62,7 +62,7 @@ def plotDFD(msql, listElements, config, bGroup, bFundamental):
     
     fd = initPlot(filename, bOrthogonal=config["plantUML"]["ortho"])
     for element in listElements:
-        fd.write(dictTypesPlots[element[md.ELEMENT_TYPE]] + " " + element[md.ELEMENT_NAME] + " as " + str(element[md.ELEMENT_ID]) + "\n")
+        fd.write(dictTypesPlots[element[md.ELEMENT_TYPE]] + " \"" + element[md.ELEMENT_NAME] + "\" as " + str(element[md.ELEMENT_ID]) + "\n")
     for link in listLinks:
         if ((bFundamental == True) and (link.type == "fundamental") or (bFundamental == False)):
             fd.write(str(link.start_element_id) + " --> " + str(link.end_element_id) + " : " + str(link.name) + "\n")
@@ -106,7 +106,7 @@ def plotHierarchy(fd, msql, element, dictTypesPlots):
             plotHierarchy(fd, msql, son, dictTypesPlots)
         fd.write("}\n")
     else:
-        fd.write(dictTypesPlots[element[md.ELEMENT_TYPE]] + " " + element[md.ELEMENT_NAME] + " as " + str(element[md.ELEMENT_ID]) + "\n")
+        fd.write(dictTypesPlots[element[md.ELEMENT_TYPE]] + " \"" + element[md.ELEMENT_NAME] + "\" as " + str(element[md.ELEMENT_ID]) + "\n")
     return;
 
 

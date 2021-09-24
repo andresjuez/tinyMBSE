@@ -139,6 +139,10 @@ class modelsql():
     def updateParentIdPerId(self, intId, newParentId):
         self.cursor.execute("UPDATE " + md.strElementTableName + " SET parentId = '{}' WHERE id = '{}'".format(str(newParentId), str(intId)))
         self.db.commit()
+
+    def updateFieldPerId(self, intId, field, value):
+        self.cursor.execute("UPDATE " + md.strElementTableName + " SET " + field + " = {} WHERE id = '{}'".format(repr(str(value)), str(intId)))
+        self.db.commit()
     
     #                #
     # LINKS COMMANDS #
