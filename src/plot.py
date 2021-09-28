@@ -8,17 +8,18 @@ def initPlot(filename, bLeftToRight=False, bOrthogonal=False):
     fd = codecs.open("./" + filename + ".puml","w", encoding='utf8')
     fd.write("@startuml\n")
     fd.write("skinparam roundCorner 15\n")
-    fd.write("skinparam rectangle {\n BackgroundColor #C6CBD3\n BorderColor Black\n roundCorner<<Concept>> 25\n}\n")
+    fd.write("skinparam rectangle {\n BackgroundColor #C5FFA6\n BorderColor Black\n roundCorner<<Concept>> 25\n}\n")
     fd.write("skinparam actor {\n BackgroundColor #C6CBD3\n BorderColor Black\n}\n")
-    fd.write("skinparam node {\n BackgroundColor #FFFFFF\n BorderColor Black\n}\n")
+    fd.write("skinparam node {\n BackgroundColor #B7D7F5\n BorderColor Black\n}\n")
     fd.write("skinparam folder {\n BackgroundColor #FFFFFF\n BorderColor Black\n}\n")
+    fd.write("skinparam usecase {\n BackgroundColor #E6D2BB\n BorderColor Black\n}\n")
     fd.write("skinparam ArrowColor black\n")
     fd.write("skinparam ActorBorderColor black\n")
     fd.write("skinparam defaultTextAlignment center\n")
     if (bLeftToRight):
         fd.write("left to right direction\n")
     if (bOrthogonal):
-        fd.write("skinparam linetype ortho\n")
+        fd.write("skinparam linetype polyline\n")
     return fd
 
 def closePlot(fd):
@@ -49,7 +50,7 @@ def plotTreeLeaf (fd, msql, element, dictTypesPlots):
     listSons = msql.getSonsPerId(element[md.ELEMENT_ID]) 
     for son in listSons:
         plotTreeLeaf (fd, msql, son, dictTypesPlots)
-        fd.write(str(element[md.ELEMENT_ID]) + " o-- " + str(son[md.ELEMENT_ID]) + "\n")
+        fd.write(str(element[md.ELEMENT_ID]) + " o- " + str(son[md.ELEMENT_ID]) + "\n")
     return;
 
 
@@ -65,7 +66,7 @@ def plotDFD(msql, listElements, config, bGroup, bFundamental):
         fd.write(dictTypesPlots[element[md.ELEMENT_TYPE]] + " \"" + element[md.ELEMENT_NAME] + "\" as " + str(element[md.ELEMENT_ID]) + "\n")
     for link in listLinks:
         if ((bFundamental == True) and (link.type == "fundamental") or (bFundamental == False)):
-            fd.write(str(link.start_element_id) + " --> " + str(link.end_element_id) + " : " + str(link.name) + "\n")
+            fd.write(str(link.start_element_id) + " -> " + str(link.end_element_id) + " : " + str(link.name) + "\n")
     closePlot(fd)
     
     launchPlantUML(filename, config)
@@ -77,7 +78,7 @@ def plotRecursiveDFD(msql, listElements, config):
     filename = ".dfd"
     listElementsPlusDescendants = list(listElements)
 
-    fd = initPlot(filename, bOrthogonal=config["plantUML"]["ortho"])
+    fd = initPlot(filename, bLeftToRight=True, bOrthogonal=config["plantUML"]["ortho"])
     for element in listElements:
         plotHierarchy(fd, msql, element, dictTypesPlots)
         listElement_descendants = list()
@@ -90,7 +91,12 @@ def plotRecursiveDFD(msql, listElements, config):
 
     for link in listLinks:
         if (link.type == "fundamental"):
-            fd.write(str(link.start_element_id) + " --> " + str(link.end_element_id) + " : " + str(link.name) + "\n")
+            start_element = msql.getElementPerId(link.start_element_id)
+            end_element = msql.getElementPerId(link.end_element_id)
+            if (start_element[md.ELEMENT_PARENT_ID] == end_element[md.ELEMENT_PARENT_ID]):
+                fd.write(str(link.start_element_id) + " -> " + str(link.end_element_id) + " : " + str(link.name) + "\n")
+            else:
+                fd.write(str(link.start_element_id) + " ---> " + str(link.end_element_id) + " : " + str(link.name) + "\n")
 
     closePlot(fd)
     

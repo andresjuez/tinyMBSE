@@ -22,6 +22,7 @@ db:
 # ---------------------------------------------------------------------
 plantUML:
  path: C:\Users\aajm\Desktop\PlantUML\plantuml_beta.jar
- ortho: True
+ ortho: False
+ 
 
 
